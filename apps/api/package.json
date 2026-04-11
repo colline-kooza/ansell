@@ -1,0 +1,11 @@
+{
+  "name": "@ansell/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "go run ./cmd/main.go",
+    "build": "CGO_ENABLED=0 GOOS=linux go build -ldflags=\"-w -s\" -o ./dist/server ./cmd/main.go",
+    "lint": "go vet ./...",
+    "clean": "rm -rf ./dist"
+  }
+}

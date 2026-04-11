@@ -1,0 +1,8 @@
+./auth.go
+./company.go
+./health.go
+./job.go
+./owner_application.go
+./property.go
+./upload.go
+./user.go

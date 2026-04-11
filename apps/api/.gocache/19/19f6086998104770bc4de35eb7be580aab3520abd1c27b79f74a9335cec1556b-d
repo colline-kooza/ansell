@@ -1,0 +1,17 @@
+./article.go
+./company.go
+./company_application.go
+./course.go
+./enrollment.go
+./job.go
+./job_application.go
+./owner_application.go
+./property.go
+./property_inquiry.go
+./supplier.go
+./supplier_application.go
+./tender.go
+./tender_bid.go
+./user.go
+./user_feed_preference.go
+./video_advert.go

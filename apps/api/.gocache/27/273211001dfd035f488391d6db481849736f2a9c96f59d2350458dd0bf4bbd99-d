@@ -1,0 +1,15 @@
+./article.go
+./auth.go
+./company.go
+./course.go
+./enrollment.go
+./feed.go
+./health.go
+./job.go
+./owner_application.go
+./property.go
+./supplier.go
+./tender.go
+./upload.go
+./user.go
+./video_advert.go
