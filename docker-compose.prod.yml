@@ -32,9 +32,8 @@ services:
   # ─── Next.js Frontend ────────────────────────────────────────────────────────
   web:
     build:
-      # Context must be repo root — Dockerfile needs pnpm-workspace.yaml from root
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: Dockerfile
       args:
         # NEXT_PUBLIC_* vars must be passed at BUILD TIME — Next.js bakes them into the JS bundle
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}

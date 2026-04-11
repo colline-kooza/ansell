@@ -1,0 +1,20 @@
+# Exclude heavyweight dirs from the build context
+node_modules
+apps/web/node_modules
+apps/api/.gomodcache
+apps/api/node_modules
+
+# Git and local config
+.git
+.gitignore
+*.md
+
+# Local env files — never bake secrets into images
+.env
+.env.*
+apps/**/.env
+apps/**/.env.*
+
+# Dev artifacts
+apps/web/.next
+apps/api/tmp
