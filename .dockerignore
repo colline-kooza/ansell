@@ -1,5 +1,6 @@
 **/node_modules
 apps/api/.gomodcache
+ansell-backend-api/
 **/.next
 apps/api/tmp
 
