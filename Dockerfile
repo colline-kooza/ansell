@@ -1,14 +1,13 @@
 # ─── Dependency install stage ─────────────────────────────────────────────────
-# Build context is the monorepo root so pnpm-workspace.yaml is available.
 FROM node:20-alpine AS deps
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web ./apps/web
-RUN pnpm install --frozen-lockfile --filter @ansell/web...
+COPY . .
+
+RUN pnpm install --frozen-lockfile
 
 # ─── Build stage ──────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
@@ -17,10 +16,7 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
-# Bring everything from deps — node_modules, source, and workspace manifests
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web ./apps/web
-COPY --from=deps /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=deps /app ./
 
 # NEXT_PUBLIC_* vars are baked into the JS bundle at build time
 ARG NEXT_PUBLIC_API_BASE_URL
