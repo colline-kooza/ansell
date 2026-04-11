@@ -25,6 +25,12 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Confirm source + deps are present before building
+RUN echo "--- workspace ---" && ls /app && \
+    echo "--- web src ---" && ls /app/apps/web && \
+    echo "--- next bin ---" && ls /app/node_modules/.bin/next 2>/dev/null || \
+    ls /app/apps/web/node_modules/.bin/next 2>/dev/null || echo "next binary not found"
+
 RUN pnpm --filter @ansell/web build
 
 # ─── Production stage ─────────────────────────────────────────────────────────
