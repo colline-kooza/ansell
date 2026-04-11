@@ -6,9 +6,8 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
-# Copy monorepo manifests first for layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web/package.json ./apps/web/package.json
+COPY apps/web ./apps/web
 RUN pnpm install --frozen-lockfile --filter @ansell/web...
 
 # ─── Build stage ──────────────────────────────────────────────────────────────
@@ -18,11 +17,10 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
-# Copy full root node_modules — pnpm stores all packages under .pnpm/ here;
-# workspace-level node_modules only have symlinks that point into this tree.
+# Bring everything from deps — node_modules, source, and workspace manifests
 COPY --from=deps /app/node_modules ./node_modules
-# Copy only the web app source (keeps image context small)
-COPY apps/web ./apps/web
+COPY --from=deps /app/apps/web ./apps/web
+COPY --from=deps /app/package.json /app/pnpm-workspace.yaml ./
 
 # NEXT_PUBLIC_* vars are baked into the JS bundle at build time
 ARG NEXT_PUBLIC_API_BASE_URL
@@ -30,9 +28,6 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Also copy root package.json so pnpm can resolve workspace
-COPY package.json pnpm-workspace.yaml ./
 
 RUN pnpm --filter @ansell/web build
 
