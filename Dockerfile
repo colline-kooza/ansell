@@ -42,9 +42,17 @@ ENV HOSTNAME=0.0.0.0
 
 COPY --from=builder /app/apps/web/public ./public
 
-# Standalone output includes only what's needed to run
+# Copy standalone server
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+
+# Copy static assets — in newer Next.js versions these may already be inside
+# standalone; this mount-based copy handles both cases without failing.
+RUN --mount=type=bind,from=builder,source=/app/apps/web/.next,target=/next_out \
+    if [ -d /next_out/static ]; then \
+      mkdir -p .next && \
+      cp -r /next_out/static .next/static && \
+      chown -R nextjs:nodejs .next/static; \
+    fi
 
 USER nextjs
 
