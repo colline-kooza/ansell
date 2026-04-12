@@ -26,3 +26,5 @@ nginx/ssl/
 # ─── OS ──────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+apps/web/.next/
+apps/web/node_modules/
