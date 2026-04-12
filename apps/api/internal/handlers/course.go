@@ -196,8 +196,9 @@ type CreateCourseRequest struct {
 	IsFree       *bool    `json:"is_free"`
 	VideoURL     string   `json:"video_url"`
 	ThumbnailURL string   `json:"thumbnail_url"`
-	Duration     string   `json:"duration"`
-	Mode         string   `json:"mode"`
+	Duration      string   `json:"duration"`
+	Level         string   `json:"level"`
+	Mode          string   `json:"mode"`
 	Location     string   `json:"location"`
 	City         string   `json:"city"`
 	StartDate    string   `json:"start_date"`
@@ -252,6 +253,7 @@ func (h *CourseHandler) Create(c *gin.Context) {
 		VideoURL:     req.VideoURL,
 		ThumbnailURL: req.ThumbnailURL,
 		Duration:     req.Duration,
+		Level:        req.Level,
 		Location:     req.Location,
 		City:         req.City,
 		Schedule:     req.Schedule,
@@ -269,7 +271,9 @@ func (h *CourseHandler) Create(c *gin.Context) {
 		course.Mode = models.CourseModeInPerson
 	}
 
-	if req.Currency != "" {
+	if len(req.Currency) > 10 {
+		course.Currency = req.Currency[:10]
+	} else if req.Currency != "" {
 		course.Currency = req.Currency
 	} else {
 		course.Currency = "USD"
@@ -354,6 +358,7 @@ func (h *CourseHandler) Update(c *gin.Context) {
 	course.VideoURL = req.VideoURL
 	course.ThumbnailURL = req.ThumbnailURL
 	course.Duration = req.Duration
+	course.Level = req.Level
 	course.Location = req.Location
 	course.City = req.City
 	course.Schedule = req.Schedule
@@ -367,7 +372,9 @@ func (h *CourseHandler) Update(c *gin.Context) {
 	if req.Mode != "" {
 		course.Mode = models.CourseMode(req.Mode)
 	}
-	if req.Currency != "" {
+	if len(req.Currency) > 10 {
+		course.Currency = req.Currency[:10]
+	} else if req.Currency != "" {
 		course.Currency = req.Currency
 	}
 	if req.Price != nil {
@@ -464,4 +471,46 @@ func (h *CourseHandler) ToggleActive(c *gin.Context) {
 
 	h.db.Preload("CreatedBy").First(&course, course.ID)
 	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Data: course})
+}
+
+// PATCH /api/admin/courses/:id/publish
+func (h *CourseHandler) Publish(c *gin.Context) {
+	id := c.Param("id")
+	var course models.Course
+
+	if err := h.db.First(&course, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, types.ErrorResponse{Success: false, Message: "Course not found"})
+		return
+	}
+
+	course.Status = models.CourseStatusActive
+	course.IsActive = true
+	if err := h.db.Save(&course).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to publish course"})
+		return
+	}
+
+	h.db.Preload("CreatedBy").First(&course, course.ID)
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "Course published", Data: course})
+}
+
+// PATCH /api/admin/courses/:id/unpublish
+func (h *CourseHandler) Unpublish(c *gin.Context) {
+	id := c.Param("id")
+	var course models.Course
+
+	if err := h.db.First(&course, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, types.ErrorResponse{Success: false, Message: "Course not found"})
+		return
+	}
+
+	course.Status = models.CourseStatusDraft
+	course.IsActive = false
+	if err := h.db.Save(&course).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to unpublish course"})
+		return
+	}
+
+	h.db.Preload("CreatedBy").First(&course, course.ID)
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "Course unpublished", Data: course})
 }

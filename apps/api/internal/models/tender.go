@@ -16,6 +16,9 @@ type Tender struct {
 	PostedByID uuid.UUID `gorm:"type:uuid;not null;index" json:"posted_by_id"`
 	PostedBy   User      `gorm:"foreignKey:PostedByID" json:"posted_by"`
 
+	CompanyID *uuid.UUID `gorm:"type:uuid;index" json:"company_id"`
+	Company   *Company   `gorm:"foreignKey:CompanyID" json:"company"`
+
 	IssuingOrganisation     string     `gorm:"not null" json:"issuing_organisation"`
 	IssuingOrganisationLogo string     `json:"issuing_organisation_logo"`
 	Title                   string     `gorm:"not null" json:"title"`

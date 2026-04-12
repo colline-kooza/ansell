@@ -7,6 +7,7 @@ import (
 
 	"ansell-backend-api/internal/models"
 	"ansell-backend-api/internal/types"
+	"ansell-backend-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -180,6 +181,11 @@ func (h *CompanyHandler) ApproveApplication(c *gin.Context) {
 			return err
 		}
 
+		slug, err := utils.GenerateUniqueCompanySlug(tx, app.CompanyName, nil)
+		if err != nil {
+			return err
+		}
+
 		// Create Company record
 		company := models.Company{
 			OwnerID:       app.UserID,
@@ -195,6 +201,7 @@ func (h *CompanyHandler) ApproveApplication(c *gin.Context) {
 			LogoURL:       app.LogoURL,
 			EmployeeCount: app.EmployeeCount,
 			IsActive:      true,
+			Slug:          slug,
 		}
 
 		if err := tx.Create(&company).Error; err != nil {
@@ -412,7 +419,7 @@ func (h *CompanyHandler) ListPublicCompanies(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	search := c.Query("search")
-	isFeatured := c.Query("is_featured")
+	industry := c.Query("industry")
 
 	if page < 1 {
 		page = 1
@@ -421,11 +428,10 @@ func (h *CompanyHandler) ListPublicCompanies(c *gin.Context) {
 
 	query := h.db.Model(&models.Company{}).Where("is_active = ?", true)
 	if search != "" {
-		query = query.Where("company_name ILIKE ?", "%"+search+"%")
+		query = query.Where("company_name ILIKE ? OR description ILIKE ? OR industry ILIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
 	}
-	if isFeatured == "true" {
-        // if there was an is_featured column, we'd query it. 
-		// Just simple query for now.
+	if industry != "" {
+		query = query.Where("industry ILIKE ?", "%"+industry+"%")
 	}
 
 	var total int64
@@ -456,21 +462,24 @@ func (h *CompanyHandler) ListPublicCompanies(c *gin.Context) {
 	})
 }
 
-// GET /api/companies/:id
+// GET /api/companies/:id_or_slug
 func (h *CompanyHandler) GetPublicCompany(c *gin.Context) {
-	idStr := c.Param("id")
+	param := c.Param("id")
 	
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Success: false,
-			Message: "Invalid company ID format",
-		})
-		return
+	id, err := uuid.Parse(param)
+	
+	var company models.Company
+	var queryErr error
+	
+	if err == nil {
+		// Valid UUID, try fetching by ID
+		queryErr = h.db.Where("id = ? AND is_active = ?", id, true).First(&company).Error
+	} else {
+		// Not a UUID, try fetching by slug
+		queryErr = h.db.Where("slug = ? AND is_active = ?", param, true).First(&company).Error
 	}
 
-	var company models.Company
-	if err := h.db.Where("id = ? AND is_active = ?", id, true).First(&company).Error; err != nil {
+	if queryErr != nil {
 		c.JSON(http.StatusNotFound, types.ErrorResponse{
 			Success: false,
 			Message: "Company not found",

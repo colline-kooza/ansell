@@ -272,6 +272,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.DELETE("/courses/:id", courseHandler.Delete)
 			admin.PATCH("/courses/:id/feature", courseHandler.ToggleFeature)
 			admin.PATCH("/courses/:id/toggle-active", courseHandler.ToggleActive)
+			admin.PATCH("/courses/:id/publish", courseHandler.Publish)
+			admin.PATCH("/courses/:id/unpublish", courseHandler.Unpublish)
 
 			// Enrollments (admin)
 			admin.GET("/enrollments", enrollmentHandler.AdminList)

@@ -33,6 +33,7 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 	status := c.DefaultQuery("status", "active")
 	isFeatured := c.Query("is_featured")
 	closingSoon := c.Query("closing_soon")
+	organisation := c.Query("issuing_organisation")
 	search := c.Query("search")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
@@ -42,7 +43,7 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 	}
 	offset := (page - 1) * pageSize
 
-	query := h.db.Model(&models.Tender{})
+	query := h.db.Model(&models.Tender{}).Preload("Company")
 
 	if status != "" {
 		query = query.Where("status = ?", status)
@@ -58,6 +59,9 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 	}
 	if isFeatured == "true" {
 		query = query.Where("is_featured = ?", true)
+	}
+	if organisation != "" {
+		query = query.Where("issuing_organisation = ?", organisation)
 	}
 	if search != "" {
 		query = query.Where("title ILIKE ? OR issuing_organisation ILIKE ? OR reference_number ILIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
@@ -99,7 +103,7 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 func (h *TenderHandler) GetPublicTender(c *gin.Context) {
 	id := c.Param("id")
 	var tender models.Tender
-	if err := h.db.First(&tender, "id = ?", id).Error; err != nil {
+	if err := h.db.Preload("Company").First(&tender, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, types.ErrorResponse{
 			Success: false,
 			Message: "Tender not found",

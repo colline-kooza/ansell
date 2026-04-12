@@ -48,6 +48,7 @@ type Course struct {
 	Notes       string         `gorm:"type:text" json:"notes"`
 	Provider    string         `gorm:"not null" json:"provider"`
 	Category    CourseCategory `gorm:"type:varchar(60);index" json:"category"`
+	Level       string         `gorm:"type:varchar(20);index" json:"level"`
 
 	Price    float64 `gorm:"default:0" json:"price"`
 	Currency string  `gorm:"type:varchar(10);default:'USD'" json:"currency"`

@@ -21,7 +21,7 @@ func NewOwnerApplicationHandler(db *gorm.DB) *OwnerApplicationHandler {
 	return &OwnerApplicationHandler{db: db}
 }
 
-// POST /api/owner/apply
+// POST /api/become-owner
 func (h *OwnerApplicationHandler) Apply(c *gin.Context) {
 	userIDStr, _ := c.Get("user_id")
 	userID, _ := uuid.Parse(userIDStr.(string))
