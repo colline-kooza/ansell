@@ -24,6 +24,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build the web application
 RUN pnpm --filter @ansell/web build
 
+# Ensure folders exist even if they are empty/missing to prevent COPY failure
+RUN mkdir -p apps/web/public apps/web/.next/static
+
 # ─── Production stage ─────────────────────────────────────────────────────────
 FROM node:22-alpine AS production
 
