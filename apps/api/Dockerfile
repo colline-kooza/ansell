@@ -1,35 +1,32 @@
 # ─── Build stage ──────────────────────────────────────────────────────────────
 FROM golang:1.25-alpine AS builder
 
-# Install necessary build tools
 RUN apk add --no-cache git ca-certificates
 
 WORKDIR /app
 
-# Copy dependency files first for caching
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
 COPY . .
 
-# Build the binary
-# Disable CGO for a statically linked binary
-# -ldflags="-w -s" reduces binary size by removing debug info
+# Build the main server binary
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./cmd/main.go
+
+# Build the seed binary
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/seed ./cmd/seed/main.go
 
 # ─── Production stage ─────────────────────────────────────────────────────────
 FROM alpine:3.19 AS production
 
-# Add runtime dependencies
 RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
-# Copy binary from builder
+# Copy both binaries from builder
 COPY --from=builder /app/server .
+COPY --from=builder /app/seed .
 
-# Run as non-privileged user for security
 RUN adduser -D -u 10001 appuser
 USER appuser
 
