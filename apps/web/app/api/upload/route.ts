@@ -81,8 +81,8 @@ export async function POST(request: Request) {
 
     const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
 
-    const customDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN;
-    const publicUrl = constructCloudflareR2Url(uniqueKey, bucketId, customDomain);
+    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || process.env.CLOUDFLARE_R2_PUBLIC_URL;
+    const publicUrl = constructCloudflareR2Url(uniqueKey, bucketId, publicDomain);
 
     return NextResponse.json({ presignedUrl, key: uniqueKey, publicUrl });
   } catch (error) {

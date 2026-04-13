@@ -254,7 +254,7 @@ function UserNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
     .replace("/user/dashboard", "")
     .split("/")
     .filter(Boolean)
-    .map((s) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+    .map((s) => s.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()));
 
   return (
     <header
@@ -300,7 +300,7 @@ function UserNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
           <Link href="/user/dashboard" className="text-gray-400 hover:text-gray-700 transition-colors font-medium">
             My Account
           </Link>
-          {crumbs.map((crumb, i) => (
+          {crumbs.map((crumb: string, i: number) => (
             <React.Fragment key={i}>
               <ChevronRight className="h-3 w-3 text-gray-300" />
               <span className={cn("font-medium", i === crumbs.length - 1 ? "text-gray-900" : "text-gray-400")}>

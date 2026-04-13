@@ -297,7 +297,7 @@ function DashboardNavbar({ onToggleCollapse }: { onToggleCollapse: () => void })
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const crumbs = pathname.replace("/company/dashboard", "").split("/").filter(Boolean).map(s => s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+  const crumbs = pathname.replace("/company/dashboard", "").split("/").filter(Boolean).map(s => s.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()));
 
   return (
     <header className={cn("sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-gray-100 bg-white px-4 transition-shadow", scrolled && "shadow-sm")}>
@@ -317,7 +317,7 @@ function DashboardNavbar({ onToggleCollapse }: { onToggleCollapse: () => void })
         </Sheet>
         <div className="flex items-center gap-1.5 text-sm">
           <Link href="/company/dashboard" className="text-gray-400 hover:text-gray-700 transition-colors font-medium">Dashboard</Link>
-          {crumbs.map((crumb, i) => (
+          {crumbs.map((crumb: string, i: number) => (
             <React.Fragment key={i}>
               <ChevronRight className="h-3 w-3 text-gray-300" />
               <span className={cn("font-medium", i === crumbs.length - 1 ? "text-gray-900" : "text-gray-400")}>{crumb}</span>

@@ -39,11 +39,11 @@ func Load() *Config {
 
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 
-		R2AccessKeyID:     getEnv("CLOUDFLARE_R2_ACCESS_KEY_ID", ""),
-		R2SecretAccessKey: getEnv("CLOUDFLARE_R2_SECRET_ACCESS_KEY", ""),
-		R2Endpoint:        getEnv("CLOUDFLARE_R2_ENDPOINT", ""),
-		R2BucketName:      getEnv("CLOUDFLARE_R2_BUCKET_NAME", ""),
-		R2PublicURL:       getEnv("CLOUDFLARE_R2_PUBLIC_URL", ""),
+		R2AccessKeyID:     getEnv("CLOUDFLARE_R2_ACCESS_KEY_ID", getEnv("R2_ACCESS_KEY", "")),
+		R2SecretAccessKey: getEnv("CLOUDFLARE_R2_SECRET_ACCESS_KEY", getEnv("R2_SECRET_KEY", "")),
+		R2Endpoint:        getEnv("CLOUDFLARE_R2_ENDPOINT", getEnv("R2_ENDPOINT", "")),
+		R2BucketName:      getEnv("CLOUDFLARE_R2_BUCKET_NAME", getEnv("R2_BUCKET", "")),
+		R2PublicURL:       getEnv("CLOUDFLARE_R2_PUBLIC_URL", getEnv("CLOUDFLARE_R2_PUBLIC_DOMAIN", getEnv("R2_PUBLIC_URL", ""))),
 	}
 }
 

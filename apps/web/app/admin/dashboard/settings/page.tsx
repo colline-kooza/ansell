@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
                     <label key={key} className="flex items-center justify-between rounded-xl border border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition-colors">
                       <div>
                         <p className="text-[13px] font-semibold text-gray-900">
-                          {key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          {key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                         </p>
                         <p className="text-[11px] text-gray-400 mt-0.5">
                           Receive {key.replace(/_/g, " ")} updates via configured channels
