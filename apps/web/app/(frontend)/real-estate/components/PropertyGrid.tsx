@@ -58,7 +58,7 @@ function PropertyCard({ property, index }: { property: Property; index: number }
   return (
     <div className="group flex cursor-pointer flex-col gap-3">
       {/* Image container */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl">
+      <div className="relative aspect-[16/10] sm:aspect-square overflow-hidden rounded-2xl">
         <Link href={`/real-estate/${propertySlug}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

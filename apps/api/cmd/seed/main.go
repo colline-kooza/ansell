@@ -57,18 +57,11 @@ func main() {
 
 func seedUser(db *gorm.DB, first, last, email, pass string, role models.UserRole) models.User {
 	var user models.User
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
-
 	if err := db.Where("email = ?", email).First(&user).Error; err == nil {
-		// Reset password and role for existing admin
-		db.Model(&user).Updates(map[string]interface{}{
-			"password":  string(hashed),
-			"role":      role,
-			"is_active": true,
-		})
 		return user
 	}
 
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	user = models.User{
 		FirstName: first,
 		LastName:  last,

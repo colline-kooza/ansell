@@ -325,7 +325,7 @@ function CompaniesContent() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="h-64 rounded-2xl bg-white border border-border/50 animate-pulse" />
              ))}
@@ -343,7 +343,7 @@ function CompaniesContent() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {companies.map((company) => (
               <CompanyCard key={company.id} company={company} />
             ))}
