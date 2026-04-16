@@ -120,7 +120,15 @@ export function SingleFileUpload({
               variant="outline"
               size="sm"
               className="h-8 gap-1.5 text-xs"
-              onClick={() => window.open(value, "_blank", "noopener,noreferrer")}
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/upload/signed?url=${encodeURIComponent(value)}`);
+                  const data = await res.json();
+                  window.open(data.url ?? value, "_blank", "noopener,noreferrer");
+                } catch {
+                  window.open(value, "_blank", "noopener,noreferrer");
+                }
+              }}
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Open

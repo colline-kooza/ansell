@@ -9,7 +9,6 @@ import {
   Clock,
   Zap,
   Eye,
-  Download,
   ExternalLink,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -80,39 +79,34 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
   const handlePdfDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!pdfUrl) {
-      toast.error("No PDF available for this job");
+      router.push(`/job-board/${job.id}`);
       return;
     }
-    
-    const toastId = toast.loading("Downloading PDF...");
+
+    const toastId = toast.loading("Preparing PDF...");
     try {
-      const response = await fetch(pdfUrl);
-      if (!response.ok) throw new Error("Network error when downloading PDF");
+      // Get a short-lived signed GET URL to avoid R2 private bucket 401s
+      const signRes = await fetch(`/api/upload/signed?url=${encodeURIComponent(pdfUrl)}`);
+      const signData = await signRes.json();
+      const downloadUrl = signData.url ?? pdfUrl;
+
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error("Download failed");
       const blob = await response.blob();
-      
-      const url = window.URL.createObjectURL(blob);
+
+      const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = "none";
-      a.href = url;
+      a.href = blobUrl;
       a.download = `${job.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
       document.body.appendChild(a);
       a.click();
-      
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(blobUrl);
       a.remove();
-      toast.success("PDF downloaded successfully", { id: toastId });
+      toast.success("PDF downloaded", { id: toastId });
     } catch (error) {
-      console.error("PDF download blob error:", error);
-      // Fallback if CORS or fetch fails
-      const a = document.createElement("a");
-      a.href = pdfUrl;
-      a.target = "_blank";
-      a.rel = "noreferrer noopener";
-      a.download = `${job.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast.success("Opening PDF in browser...", { id: toastId });
+      console.error("PDF download error:", error);
+      toast.error("Failed to download PDF", { id: toastId });
     }
   };
 
@@ -122,7 +116,7 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.04 }}
-      onClick={(e) => pdfUrl ? handlePdfDownload(e) : router.push(`/job-board/${job.id}`)}
+      onClick={handlePdfDownload}
       className="group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-2.5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-4"
     >
       <div className="relative z-10 flex flex-col gap-2 sm:gap-3 md:flex-row md:items-center md:gap-4 pointer-events-none">
@@ -186,12 +180,6 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
         </div>
 
         <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-gray-100 pt-2 sm:pt-3 md:w-auto md:border-t-0 md:pt-0 pointer-events-auto">
-          {pdfUrl && (
-            <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
-              <Download className="size-2.5" />
-              PDF
-            </span>
-          )}
           <Link
             href={`/job-board/${job.id}`}
             onClick={(e) => e.stopPropagation()}
