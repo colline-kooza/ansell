@@ -113,7 +113,7 @@ export default function JobList({
             }
           >
             {jobs.map((job) => (
-              <JobCard key={job.id} job={job} view={viewMode} />
+              <JobCard key={job.id} job={job} />
             ))}
           </div>
 

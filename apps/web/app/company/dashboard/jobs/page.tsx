@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   useCompanyJobs, useCompanyCreateJob, useCompanyUpdateJob,
   useCompanyDeleteJob,
@@ -17,7 +16,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +25,7 @@ import {
   Search, MoreHorizontal, Edit, Trash2, PlusCircle,
   Briefcase, MapPin, Loader2,
 } from "lucide-react";
+import { SingleFileUpload } from "@/components/shared/single-file-upload";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DeleteConfirmModal } from "@/components/shared/delete-confirm-modal";
@@ -47,14 +47,14 @@ interface FormData {
   job_type: string; experience_level: string;
   salary_min: string; salary_max: string; salary_currency: string;
   category: string; description: string; requirements: string;
-  deadline: string; status: string;
+  deadline: string; status: string; pdf_url: string;
 }
 
 const DEFAULT_FORM: FormData = {
   title: "", company_name: "", city: "", location: "",
   job_type: "full_time", experience_level: "mid",
   salary_min: "", salary_max: "", salary_currency: "USD",
-  category: "", description: "", requirements: "", deadline: "", status: "draft",
+  category: "", description: "", requirements: "", deadline: "", status: "draft", pdf_url: "",
 };
 
 function JobFormModal({ open, onClose, job }: { open: boolean; onClose: () => void; job: Job | null }) {
@@ -67,20 +67,54 @@ function JobFormModal({ open, onClose, job }: { open: boolean; onClose: () => vo
       job_type: job.job_type || "full_time", experience_level: job.experience_level || "mid",
       salary_min: job.salary_min ? String(job.salary_min) : "", salary_max: job.salary_max ? String(job.salary_max) : "",
       salary_currency: job.salary_currency || "USD", category: job.category || "",
-      description: job.description || "", requirements: job.requirements || "",
+      description: job.description || "", requirements: job.requirements || job.qualifications || "",
       deadline: job.deadline ? job.deadline.slice(0, 10) : "", status: job.status,
+      pdf_url: job.pdf_url || (job as any).pdfUrl || (job as any).PdfUrl || "",
     } : DEFAULT_FORM
   );
+
+  useEffect(() => {
+    if (!open) return;
+
+    if (job) {
+      setForm({
+        title: job.title,
+        company_name: job.company_name || "",
+        city: job.city || "",
+        location: job.location || "",
+        job_type: job.job_type || "full_time",
+        experience_level: job.experience_level || "mid",
+        salary_min: job.salary_min ? String(job.salary_min) : "",
+        salary_max: job.salary_max ? String(job.salary_max) : "",
+        salary_currency: job.salary_currency || "USD",
+        category: job.category || "",
+        description: job.description || "",
+        requirements: job.requirements || job.qualifications || "",
+        deadline: job.deadline ? job.deadline.slice(0, 10) : "",
+        status: job.status || "draft",
+        pdf_url: job.pdf_url || (job as any).pdfUrl || (job as any).PdfUrl || "",
+      });
+      return;
+    }
+
+    setForm(DEFAULT_FORM);
+  }, [job, open]);
 
   const set = (k: keyof FormData, v: string) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!form.title.trim()) { toast.error("Job title is required"); return; }
+    if (!form.title.trim() || !form.category.trim() || !form.city.trim() || !form.description.trim()) {
+      toast.error("Title, category, city, and description are required");
+      return;
+    }
+
     const payload = {
       ...form,
+      qualifications: form.requirements || "",
       salary_min: form.salary_min ? Number(form.salary_min) : undefined,
       salary_max: form.salary_max ? Number(form.salary_max) : undefined,
       deadline: form.deadline || undefined,
+      pdf_url: form.pdf_url,
     };
     try {
       if (isEditing) await updateMutation.mutateAsync({ id: job.id, payload });
@@ -96,6 +130,9 @@ function JobFormModal({ open, onClose, job }: { open: boolean; onClose: () => vo
       <DialogContent className="max-w-2xl p-0">
         <DialogHeader className="px-6 pt-5 pb-0">
           <DialogTitle className="text-base font-semibold">{isEditing ? "Edit Job" : "Post New Job"}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Fill in the job details and optionally upload a PDF attachment.
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[70vh]">
           <div className="px-6 py-4 space-y-4">
@@ -158,6 +195,18 @@ function JobFormModal({ open, onClose, job }: { open: boolean; onClose: () => vo
               <div className="col-span-2">
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Requirements</Label>
                 <Textarea value={form.requirements} onChange={e => set("requirements", e.target.value)} rows={3} placeholder="List requirements..." className="text-[13px] resize-none" />
+              </div>
+              {/* PDF Upload */}
+              <div className="col-span-2">
+                <Label className="text-[11px] text-gray-500 mb-1.5 block">Job PDF Document</Label>
+                <SingleFileUpload
+                  value={form.pdf_url}
+                  onChange={(url) => set("pdf_url", url)}
+                  maxSizeMb={10}
+                  emptyTitle="Upload job attachment PDF"
+                  emptyHint="PDF only, up to 10MB"
+                  className="mt-1"
+                />
               </div>
             </div>
           </div>
@@ -269,6 +318,9 @@ export default function CompanyJobsPage() {
                           <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
                             <MapPin className="h-3 w-3" />{job.city || "Remote"}
                           </p>
+                          {job.pdf_url && (
+                            <p className="mt-1 text-[11px] font-medium text-primary">PDF attached</p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-[13px] text-gray-500 capitalize">{job.job_type?.replace(/_/g, " ") || "—"}</TableCell>

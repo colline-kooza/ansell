@@ -1,9 +1,8 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Building2, Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { PropertyGrid } from "./components/PropertyGrid";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -150,39 +149,7 @@ function RealEstateContent() {
 
   return (
     <div className="min-h-screen bg-[#f4f8fb]">
-      <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(180,253,131,0.18),transparent_70%)]" />
-
-      {/* Page header */}
-      <div className="border-b border-border/60 bg-white">
-        <div className="mx-auto max-w-7xl px-3 py-7 sm:px-6 sm:py-10 lg:px-8">
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">Home</Link>
-            <span>/</span>
-            <span className="font-medium text-foreground">Real Estate</span>
-          </div>
-
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Property listings across South Sudan
-              </h1>
-              <p className="mt-1 max-w-3xl text-xs leading-6 text-muted-foreground sm:text-sm sm:leading-7">
-                Browse rentals, land, lease space, apartments, and commercial properties from live ANASELL listings.
-              </p>
-            </div>
-            <Link
-              href="/become-owner"
-              className="inline-flex shrink-0 items-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground transition hover:brightness-95 sm:px-5 sm:py-3 sm:text-sm"
-            >
-              <Building2 className="size-3.5" />
-              Become a Property Owner
-              <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Filter bar */}
         <div className="mb-5 flex flex-wrap items-center gap-2">
           {/* Category pills — always show horizontally */}

@@ -9,6 +9,7 @@ export interface Job {
   title: string;
   description?: string;
   requirements?: string;
+  qualifications?: string;
   company_id?: string;
   company_name: string;
   company_logo?: string;
@@ -25,10 +26,17 @@ export interface Job {
   is_featured: boolean;
   is_active: boolean;
   deadline?: string;
+  pdf_url?: string;
   views: number;
   applications_count?: number;
   created_at: string;
   updated_at: string;
+  company?: {
+    id: string;
+    company_name: string;
+    slug?: string;
+    logo_url?: string;
+  };
   posted_by?: { id: string; first_name: string; last_name: string; email: string };
   [key: string]: unknown;
 }

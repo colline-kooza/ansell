@@ -9,15 +9,22 @@ const uploadRequestSchema = z.object({
   filename: z.string(),
   contentType: z.string(),
   size: z.number(),
+  folder: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9/_-]+$/)
+    .optional(),
 });
 
-function generateUniqueKey(filename: string): string {
-  return `${uuidv4()}-${filename}`;
+function generateUniqueKey(filename: string, folder?: string): string {
+  const key = `${uuidv4()}-${filename}`;
+  if (!folder) return key;
+  return `${folder.replace(/^\/+|\/+$/g, "")}/${key}`;
 }
 
 function constructCloudflareR2Url(
   key: string,
-  bucketId: string,
+  bucketId?: string,
   customDomain?: string,
 ): string {
   // Ensure the key is URL-safe (encodes spaces, special chars)
@@ -34,6 +41,10 @@ function constructCloudflareR2Url(
     return `${domain}/${encodedKey}`;
   }
 
+  if (!bucketId) {
+    throw new Error("Missing Cloudflare R2 bucket ID for fallback public URL generation");
+  }
+
   const cleanBucketId = bucketId.trim();
   return `https://pub-${cleanBucketId}.r2.dev/${encodedKey}`;
 }
@@ -47,10 +58,16 @@ export async function POST(request: Request) {
     const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
     const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
     const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
+    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || process.env.CLOUDFLARE_R2_PUBLIC_URL;
 
-    if (!bucketName || !bucketId || !accessKeyId || !secretAccessKey || !endpoint) {
+    if (!bucketName || !accessKeyId || !secretAccessKey || !endpoint) {
       console.error("Missing required Cloudflare R2 environment variables");
       return NextResponse.json({ error: "R2 storage is not configured" }, { status: 500 });
+    }
+
+    if (!publicDomain && !bucketId) {
+      console.error("Missing Cloudflare R2 public domain/url and bucket ID fallback");
+      return NextResponse.json({ error: "R2 storage public URL is not configured" }, { status: 500 });
     }
 
     const body = await request.json();
@@ -63,14 +80,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { filename, contentType, size } = validation.data;
+    const { filename, contentType, size, folder } = validation.data;
 
     // Validate file size (50MB max)
     if (size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: "File size exceeds 50MB limit" }, { status: 400 });
     }
 
-    const uniqueKey = generateUniqueKey(filename);
+    const uniqueKey = generateUniqueKey(filename, folder);
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
@@ -81,7 +98,6 @@ export async function POST(request: Request) {
 
     const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
 
-    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || process.env.CLOUDFLARE_R2_PUBLIC_URL;
     const publicUrl = constructCloudflareR2Url(uniqueKey, bucketId, publicDomain);
 
     return NextResponse.json({ presignedUrl, key: uniqueKey, publicUrl });

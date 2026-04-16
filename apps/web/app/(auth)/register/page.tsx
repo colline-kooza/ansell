@@ -150,7 +150,7 @@ function RegisterContent() {
               <div className="leading-none text-[#10210f]">
                 <p className="text-[1.9rem] font-black tracking-[-0.06em]">Ansell</p>
                 <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#10210f]/72">
-                  Marketplace Hub
+                  Opportunity Central
                 </p>
               </div>
             </div>
@@ -209,7 +209,7 @@ function RegisterContent() {
                 <div className="leading-none">
                   <p className="text-[1.6rem] font-black tracking-[-0.06em] text-white">Ansell</p>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-white/55">
-                    Marketplace Hub
+                    Opportunity Central
                   </p>
                 </div>
               </div>

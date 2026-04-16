@@ -21,6 +21,8 @@ export interface Job {
   requirements?: string;
   is_featured?: boolean;
   company_id?: string;
+  pdf_url?: string;
+  views?: number;
   company?: {
     id: string;
     company_name: string;
@@ -59,6 +61,45 @@ function getAuthToken(): string | null {
   return localStorage.getItem("ansell_auth_token");
 }
 
+function normalizeJob(job: Record<string, unknown>): Job {
+  const company = (job.company as Record<string, unknown> | undefined) ?? undefined;
+
+  return {
+    ...(job as unknown as Job),
+    company_name:
+      (job.company_name as string | undefined) ||
+      (job.companyName as string | undefined) ||
+      (company?.company_name as string | undefined) ||
+      (company?.name as string | undefined) ||
+      "",
+    pdf_url:
+      (job.pdf_url as string | undefined) ||
+      (job.pdfUrl as string | undefined) ||
+      (job.PdfUrl as string | undefined) ||
+      undefined,
+    views:
+      typeof job.views === "number"
+        ? job.views
+        : typeof job.views === "string"
+          ? Number(job.views)
+          : undefined,
+    company: company
+      ? {
+          id: String(company.id ?? ""),
+          company_name:
+            (company.company_name as string | undefined) ||
+            (company.name as string | undefined) ||
+            "",
+          slug: String(company.slug ?? ""),
+          logo_url:
+            (company.logo_url as string | undefined) ||
+            (company.logoUrl as string | undefined) ||
+            undefined,
+        }
+      : undefined,
+  };
+}
+
 async function fetchJobs(options: UseJobsOptions): Promise<JobsResponse> {
   const params = new URLSearchParams();
 
@@ -88,7 +129,17 @@ async function fetchJobs(options: UseJobsOptions): Promise<JobsResponse> {
     throw new Error(`Failed to fetch jobs: ${response.status}`);
   }
 
-  return response.json() as Promise<JobsResponse>;
+  const json = (await response.json()) as Partial<JobsResponse>;
+
+  return {
+    data: Array.isArray(json.data)
+      ? json.data.map((job) => normalizeJob(job as Record<string, unknown>))
+      : [],
+    total_items: json.total_items ?? 0,
+    total_pages: json.total_pages ?? 1,
+    page: json.page ?? 1,
+    page_size: json.page_size ?? 20,
+  };
 }
 
 export function useJobs(options: UseJobsOptions = {}) {

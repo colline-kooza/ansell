@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Briefcase, MapPin, Clock, Building2, Loader2 } from "lucide-react";
+import { ArrowRight, Briefcase, MapPin, Clock, Building2, Loader2, Download } from "lucide-react";
 import { useJobs } from "@/hooks/use-jobs";
+import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 function JobSkeleton() {
@@ -59,12 +60,44 @@ export function JobListingsSection() {
               </div>
             )
             : jobs.map((job) => (
-              <Link
+              <div
                 key={job.id}
-                href={`/job-board/${job.id}`}
-                className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+                onClick={async () => {
+                  if (job.pdf_url) {
+                    try {
+                      const response = await fetch(job.pdf_url);
+                      if (!response.ok) throw new Error("Network error when downloading PDF");
+                      const blob = await response.blob();
+                      
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.style.display = "none";
+                      a.href = url;
+                      a.download = `${job.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      
+                      window.URL.revokeObjectURL(url);
+                      a.remove();
+                    } catch (error) {
+                      console.error("PDF download blob error:", error);
+                      const a = document.createElement("a");
+                      a.href = job.pdf_url;
+                      a.target = "_blank";
+                      a.rel = "noreferrer noopener";
+                      a.download = `${job.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                    }
+                  }
+                }}
+                className={cn(
+                  "flex flex-col gap-3 rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between",
+                  job.pdf_url && "cursor-pointer"
+                )}
               >
-                <div className="flex min-w-0 items-start gap-3">
+                <div className="flex min-w-0 items-start gap-3 pointer-events-none">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     {job.company?.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -92,22 +125,16 @@ export function JobListingsSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {job.job_type && (
-                    <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      {job.job_type}
-                    </span>
-                  )}
-                  {(job.salary_min || job.salary_max) && (
-                    <span className="text-sm font-semibold text-foreground">
-                      {job.salary_currency ?? "USD"}{" "}
-                      {job.salary_min?.toLocaleString()}
-                      {job.salary_max ? `–${job.salary_max?.toLocaleString()}` : "+"}
-                      /mo
-                    </span>
-                  )}
+                <div className="flex shrink-0 items-center justify-end">
+                  <Link
+                    href={`/job-board/${job.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs font-semibold text-primary hover:underline underline-offset-4"
+                  >
+                    View Details
+                  </Link>
                 </div>
-              </Link>
+              </div>
             ))}
         </div>
 

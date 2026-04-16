@@ -16,7 +16,7 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +25,7 @@ import {
   Search, MoreHorizontal, Eye, Edit, Trash2, PlusCircle, Briefcase,
   CheckCircle, XCircle, Star, StarOff, MapPin, Loader2, Building,
 } from "lucide-react";
+import { SingleFileUpload } from "@/components/shared/single-file-upload";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DeleteConfirmModal } from "@/components/shared/delete-confirm-modal";
@@ -65,13 +66,14 @@ interface JobFormData {
   requirements: string;
   deadline: string;
   status: string;
+  pdf_url: string;
 }
 
 const DEFAULT_FORM: JobFormData = {
   title: "", company_name: "", city: "", location: "",
   job_type: "full_time", experience_level: "mid",
   salary_min: "", salary_max: "", salary_currency: "USD",
-  category: "", description: "", requirements: "", deadline: "", status: "pending_review",
+  category: "", description: "", requirements: "", deadline: "", status: "pending_review", pdf_url: "",
 };
 
 function JobFormModal({
@@ -83,7 +85,7 @@ function JobFormModal({
   const [form, setForm] = useState<JobFormData>(
     job ? {
       title: job.title || "", 
-      company_name: job.company_name || (job as any).company?.name || "",
+      company_name: job.company_name || job.company?.company_name || "",
       city: job.city || "", 
       location: job.location || "",
       job_type: job.job_type || "full_time", 
@@ -93,9 +95,10 @@ function JobFormModal({
       salary_currency: job.salary_currency || "USD", 
       category: job.category || "",
       description: job.description || "", 
-      requirements: job.requirements || (job as any).qualifications || "", 
+      requirements: job.requirements || job.qualifications || "", 
       deadline: job.deadline ? job.deadline.slice(0, 10) : "", 
       status: job.status || "pending_review",
+      pdf_url: job.pdf_url || "",
     } : DEFAULT_FORM
   );
 
@@ -104,7 +107,7 @@ function JobFormModal({
       if (job) {
         setForm({
           title: job.title || "",
-          company_name: job.company_name || (job as any).company?.name || "",
+          company_name: job.company_name || job.company?.company_name || "",
           city: job.city || "",
           location: job.location || "",
           job_type: job.job_type || "full_time",
@@ -114,9 +117,10 @@ function JobFormModal({
           salary_currency: job.salary_currency || "USD",
           category: job.category || "",
           description: job.description || "",
-          requirements: job.requirements || (job as any).qualifications || "",
+          requirements: job.requirements || job.qualifications || "",
           deadline: job.deadline ? job.deadline.slice(0, 10) : "",
           status: job.status || "pending_review",
+          pdf_url: job.pdf_url || "",
         });
       } else {
         setForm(DEFAULT_FORM);
@@ -127,16 +131,17 @@ function JobFormModal({
   const set = (k: keyof JobFormData, v: string) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!form.title.trim() || !form.company_name.trim()) {
-      toast.error("Title and Company Name are required");
+    if (!form.title.trim() || !form.category.trim() || !form.city.trim() || !form.description.trim()) {
+      toast.error("Title, category, city, and description are required");
       return;
     }
     const payload = {
       ...form,
       qualifications: form.requirements || "",
       application_deadline: form.deadline ? new Date(form.deadline).toISOString() : undefined,
-      salary_min: form.salary_min ? parseFloat(form.salary_min) : 0,
-      salary_max: form.salary_max ? parseFloat(form.salary_max) : 0,
+      salary_min: form.salary_min ? parseFloat(form.salary_min) : undefined,
+      salary_max: form.salary_max ? parseFloat(form.salary_max) : undefined,
+      pdf_url: form.pdf_url,
       is_active: true
     };
     try {
@@ -156,6 +161,9 @@ function JobFormModal({
       <DialogContent className="max-w-2xl p-0">
         <DialogHeader className="px-6 pt-5 pb-0">
           <DialogTitle className="text-base font-semibold">{isEditing ? "Edit Job" : "Post New Job"}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Fill in the job details and optionally upload a PDF attachment.
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[70vh]">
           <div className="px-6 py-4 space-y-4">
@@ -227,6 +235,16 @@ function JobFormModal({
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Requirements</Label>
                 <Textarea value={form.requirements} onChange={e => set("requirements", e.target.value)} rows={3} placeholder="List requirements..." className="text-[13px] resize-none" />
               </div>
+              <div className="col-span-2">
+                <Label className="text-[11px] text-gray-500 mb-1.5 block">Job PDF Document</Label>
+                <SingleFileUpload
+                  value={form.pdf_url}
+                  onChange={(url) => set("pdf_url", url)}
+                  maxSizeMb={10}
+                  emptyTitle="Upload job attachment PDF"
+                  emptyHint="PDF only, up to 10MB"
+                />
+              </div>
             </div>
           </div>
         </ScrollArea>
@@ -249,6 +267,9 @@ function ViewJobModal({ job, open, onClose }: { job: Job | null; open: boolean; 
       <DialogContent className="max-w-xl p-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-gray-100">
           <DialogTitle className="text-base font-semibold">{job.title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Review the selected job listing details.
+          </DialogDescription>
           <p className="text-[12px] text-gray-400">{job.company_name} · {job.city}</p>
         </DialogHeader>
         <ScrollArea className="max-h-[65vh]">

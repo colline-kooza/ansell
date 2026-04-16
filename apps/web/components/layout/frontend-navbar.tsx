@@ -19,7 +19,6 @@ import {
   Menu,
   Megaphone,
   Newspaper,
-  ShieldCheck,
   Tag,
   TrendingUp,
   Users,
@@ -136,10 +135,6 @@ const NAV_ITEMS: NavItem[] = [
       ],
     },
   },
-  {
-    label: "ID Verify",
-    href: "/id-verification",
-  },
 ];
 
 // ─── FrontendNavbar ────────────────────────────────────────────────────────────
@@ -192,7 +187,7 @@ export function FrontendNavbar() {
           <div className="leading-none">
             <p className="text-[1.75rem] font-black tracking-[-0.06em] text-foreground">Ansell</p>
             <p className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-              Marketplace Hub
+              Opportunity Central
             </p>
           </div>
         </Link>
