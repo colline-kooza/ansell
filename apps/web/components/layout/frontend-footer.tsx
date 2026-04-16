@@ -89,7 +89,7 @@ export function FrontendFooter() {
         <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,_rgba(180,253,131,0.20),_transparent_60%)]" />
         <div className="absolute bottom-0 left-0 h-16 w-full bg-white/55 [clip-path:ellipse(76%_58%_at_50%_100%)]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-5 md:px-10 md:py-6 lg:px-12 xl:px-16">
+        <div className="relative mx-auto max-w-7xl px-6 py-3 md:px-10 md:py-4 lg:px-12 xl:px-16">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Left: brand + tagline */}
             <div className="z-10 min-w-0">
@@ -147,19 +147,19 @@ export function FrontendFooter() {
       </div>
 
       {/* Links grid */}
-      <div className="bg-white px-6 pb-4 pt-4 md:px-10 lg:px-12 xl:px-16">
-        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2 xl:grid-cols-[0.95fr_1fr_0.8fr_0.8fr_1fr]">
+      <div className="bg-white px-6 pb-3 pt-3 md:px-10 lg:px-12 xl:px-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-[0.95fr_1fr_0.8fr_0.8fr_1fr]">
           {footerGroups.map((group) => (
             <div key={group.title}>
-              <h4 className="mb-2 text-sm font-semibold text-foreground">
+              <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground">
                 {group.title}
               </h4>
-              <ul className="space-y-1.5">
+              <ul className="space-y-1">
                 {group.items.map((item) => (
                   <li key={item}>
                     <Link
                       href="/"
-                      className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      className="line-clamp-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {item}
                     </Link>
@@ -169,12 +169,12 @@ export function FrontendFooter() {
             </div>
           ))}
 
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-foreground">Follow Us</h4>
-            <p className="max-w-[16rem] text-xs leading-5 text-muted-foreground">
+          <div className="space-y-1.5">
+            <h4 className="text-[11px] font-semibold uppercase tracking-wide text-foreground">Follow Us</h4>
+            <p className="hidden text-[11px] leading-4 text-muted-foreground sm:block">
               Stay connected with Ansell for the latest listings and updates.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-2.5">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -197,7 +197,7 @@ export function FrontendFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mx-auto mt-4 max-w-7xl border-t border-border/40 pt-3">
+        <div className="mx-auto mt-3 max-w-7xl border-t border-border/40 pt-2">
           <p className="text-center text-[11px] text-muted-foreground">
             © {new Date().getFullYear()} Ansell Hub. All rights reserved.
           </p>
