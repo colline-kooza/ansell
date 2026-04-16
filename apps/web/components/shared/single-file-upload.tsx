@@ -10,6 +10,7 @@ import { useUploadMultipleImages } from "@/hooks/use-upload";
 interface SingleFileUploadProps {
   value?: string;
   onChange: (url: string) => void;
+  onUploading?: (uploading: boolean) => void;
   disabled?: boolean;
   className?: string;
   accept?: string;
@@ -28,6 +29,7 @@ function getDisplayName(url: string) {
 export function SingleFileUpload({
   value = "",
   onChange,
+  onUploading,
   disabled = false,
   className,
   accept = ".pdf,application/pdf",
@@ -55,6 +57,7 @@ export function SingleFileUpload({
     }
 
     try {
+      onUploading?.(true);
       const results = await uploadMutation.mutateAsync([file]);
       const result = results[0];
       if (!result) {
@@ -65,6 +68,7 @@ export function SingleFileUpload({
     } catch {
       // Upload hook already shows the user-facing error toast.
     } finally {
+      onUploading?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }

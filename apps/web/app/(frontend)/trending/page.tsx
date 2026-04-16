@@ -24,75 +24,84 @@ function ArticleCard({ article, isFeatured }: { article: Article; isFeatured?: b
 
   return (
     <Link href={`/news/${article.slug}`}>
-      <article
-        className={`group flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-gray-50/70 sm:flex-row sm:items-start sm:gap-4 ${
-          isFeatured ? "sm:gap-5 sm:py-5" : ""
-        }`}
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="group relative rounded-2xl border border-gray-100 bg-white p-2.5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-4"
       >
-        <div
-          className={`${isFeatured ? "h-48 sm:h-36 sm:w-52" : "h-40 sm:h-20 sm:w-28"} order-first shrink-0 overflow-hidden rounded-xl border border-border bg-gray-100`}
-        >
-          {article.cover_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={article.cover_image_url}
-              alt={article.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-            />
-          ) : null}
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <span className="w-fit rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-            {categoryLabel}
-          </span>
-          <h3
-            className={`font-bold text-gray-900 transition-colors group-hover:text-primary ${
-              isFeatured ? "text-[20px] leading-snug sm:text-[18px]" : "text-[16px] leading-snug sm:text-[14px]"
-            }`}
+        <div className="flex items-start gap-3 sm:gap-4">
+          {/* Thumbnail */}
+          <div
+            className={`${isFeatured ? "size-16 sm:h-24 sm:w-36" : "size-14 sm:h-16 sm:w-24"} shrink-0 overflow-hidden rounded-xl border border-border bg-gray-100`}
           >
-            {article.title}
-          </h3>
-          {isFeatured && article.excerpt && (
-            <p className="line-clamp-2 text-[13px] leading-relaxed text-gray-500">
-              {article.excerpt}
-            </p>
-          )}
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-            <span className="font-semibold text-gray-700">{authorName}</span>
-            <span>•</span>
-            <span>{date}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Clock size={11} />
-              {article.read_time_minutes} min read
+            {article.cover_image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={article.cover_image_url}
+                alt={article.title}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+            ) : null}
+          </div>
+
+          {/* Content */}
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <span className="w-fit rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+              {categoryLabel}
             </span>
-            {views != null && views > 0 && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Eye size={11} />
-                  {views.toLocaleString()}
-                </span>
-              </>
+            <h3
+              className={`font-bold text-gray-900 transition-colors group-hover:text-primary ${
+                isFeatured
+                  ? "line-clamp-2 text-[17px] leading-snug sm:text-[18px]"
+                  : "line-clamp-2 text-[17px] leading-snug sm:line-clamp-1"
+              }`}
+            >
+              {article.title}
+            </h3>
+            {isFeatured && article.excerpt && (
+              <p className="hidden line-clamp-1 text-[12px] leading-relaxed text-gray-500 sm:block">
+                {article.excerpt}
+              </p>
             )}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+              <span className="font-semibold text-gray-700">{authorName}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">{date}</span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <Clock size={11} />
+                {article.read_time_minutes} min read
+              </span>
+              {views != null && views > 0 && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-emerald-600">
+                    <Eye size={11} />
+                    {views.toLocaleString()}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </article>
+      </motion.article>
     </Link>
   );
 }
 
 function ArticleSkeleton({ isFeatured }: { isFeatured?: boolean }) {
   return (
-    <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:gap-4">
-      <Skeleton
-        className={`${isFeatured ? "h-48 sm:h-36 sm:w-52" : "h-40 sm:h-20 sm:w-28"} shrink-0 rounded-xl`}
-      />
-      <div className="flex flex-1 flex-col gap-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className={isFeatured ? "h-12 w-4/5" : "h-8 w-4/5"} />
-        <Skeleton className="h-3.5 w-1/3" />
+    <div className="rounded-2xl border border-gray-100 bg-white p-2.5 sm:p-4">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <Skeleton
+          className={`${isFeatured ? "size-16 sm:h-24 sm:w-36" : "size-14 sm:h-16 sm:w-24"} shrink-0 rounded-xl`}
+        />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-3.5 w-16" />
+          <Skeleton className={isFeatured ? "h-10 w-4/5" : "h-7 w-4/5"} />
+          <Skeleton className="h-3 w-1/3" />
+        </div>
       </div>
     </div>
   );
@@ -129,7 +138,7 @@ export default function TrendingPage() {
     <div className="min-h-screen bg-[#f4f8fb]">
       <section className="relative border-b border-border/50 bg-white px-4 py-8">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top,rgba(180,253,131,0.18),transparent_70%)]" />
-        <div className="relative z-10 mx-auto max-w-4xl">
+        <div className="relative z-10 mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,7 +162,7 @@ export default function TrendingPage() {
       </section>
 
       <div className="sticky top-0 z-30 border-b border-border/50 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center gap-2 overflow-x-auto px-3 py-2 sm:px-6 [scrollbar-width:none]">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-3 py-2 sm:px-6 lg:px-8 [scrollbar-width:none]">
           {allTabs.map((tab) => (
             <button
               key={tab.value}
@@ -171,17 +180,17 @@ export default function TrendingPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-8">
-        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="space-y-3">
           {articlesQuery.isLoading ? (
-            <div className="divide-y divide-border/50">
+            <>
               <ArticleSkeleton isFeatured />
               {[...Array(4)].map((_, i) => (
                 <ArticleSkeleton key={i} />
               ))}
-            </div>
+            </>
           ) : articles.length === 0 ? (
-            <div className="px-4 py-14 text-center">
+            <div className="rounded-xl border border-dashed border-border bg-white py-14 text-center">
               <TrendingUp className="mx-auto mb-3 size-10 text-muted-foreground/30" />
               <p className="text-sm font-semibold text-foreground">No articles in this category yet</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -189,19 +198,19 @@ export default function TrendingPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-border/50">
+            <>
               {featuredArticle && <ArticleCard article={featuredArticle} isFeatured />}
               {restArticles.map((article) => (
                 <ArticleCard key={article.id} article={article} />
               ))}
-            </div>
+            </>
           )}
 
           {!articlesQuery.isLoading && meta.pages > 1 && (
-            <div className="flex items-center justify-between border-t border-border/50 bg-gray-50/30 px-4 py-3">
-              <span className="text-[11px] text-muted-foreground">
-                Page <span className="font-medium text-foreground">{meta.page}</span> of {meta.pages} • {meta.total} articles
-              </span>
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-xs text-muted-foreground">
+                Page {meta.page} of {meta.pages} • {meta.total} articles
+              </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"

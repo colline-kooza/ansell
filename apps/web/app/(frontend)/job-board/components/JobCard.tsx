@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   DollarSign,
@@ -15,7 +16,6 @@ import { motion } from "motion/react";
 import { formatDistanceToNow } from "date-fns";
 import type { Job } from "@/hooks/use-jobs";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface JobCardProps {
   job: Job;
@@ -24,6 +24,7 @@ interface JobCardProps {
 
 export default function JobCard({ job, index = 0 }: JobCardProps) {
   const [imgError, setImgError] = useState(false);
+  const router = useRouter();
 
   const postedAgo = job.created_at
     ? formatDistanceToNow(new Date(job.created_at), { addSuffix: true })
@@ -121,11 +122,8 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.04 }}
-      onClick={pdfUrl ? handlePdfDownload : undefined}
-      className={cn(
-        "group relative rounded-2xl border border-gray-100 bg-white p-3 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-5",
-        pdfUrl && "cursor-pointer"
-      )}
+      onClick={(e) => pdfUrl ? handlePdfDownload(e) : router.push(`/job-board/${job.id}`)}
+      className="group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-2.5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-4"
     >
       <div className="relative z-10 flex flex-col gap-2 sm:gap-3 md:flex-row md:items-center md:gap-4 pointer-events-none">
         <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-4">
@@ -148,7 +146,7 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
 
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-start gap-1.5">
-              <h3 className="line-clamp-2 text-[15px] font-bold text-gray-900 transition-colors group-hover:text-primary sm:line-clamp-1 sm:text-base">
+              <h3 className="line-clamp-2 text-[17px] font-bold text-gray-900 transition-colors group-hover:text-primary sm:line-clamp-1 sm:text-[17px]">
                 {job.title}
               </h3>
               {isHot && <Zap className="size-3 shrink-0 fill-red-500 text-red-500" />}
@@ -174,7 +172,7 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
                 {salaryLabel}
               </span>
               {views != null && views > 0 && (
-                <span className="flex items-center gap-1 text-gray-400">
+                <span className="flex items-center gap-1 text-emerald-600">
                   <Eye className="size-3" />
                   {views.toLocaleString()} views
                 </span>
@@ -188,6 +186,12 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
         </div>
 
         <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-gray-100 pt-2 sm:pt-3 md:w-auto md:border-t-0 md:pt-0 pointer-events-auto">
+          {pdfUrl && (
+            <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+              <Download className="size-2.5" />
+              PDF
+            </span>
+          )}
           <Link
             href={`/job-board/${job.id}`}
             onClick={(e) => e.stopPropagation()}

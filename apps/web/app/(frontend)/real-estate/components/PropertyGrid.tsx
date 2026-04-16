@@ -12,7 +12,7 @@ interface PropertyGridProps {
 
 export function PropertyGrid({ properties }: PropertyGridProps) {
   return (
-    <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
       {properties.map((property, index) => (
         <PropertyCard key={property.id} property={property} index={index} />
       ))}
@@ -58,7 +58,7 @@ function PropertyCard({ property, index }: { property: Property; index: number }
   return (
     <div className="group flex cursor-pointer flex-col gap-3">
       {/* Image container */}
-      <div className="relative aspect-[16/10] sm:aspect-square overflow-hidden rounded-2xl">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
         <Link href={`/real-estate/${propertySlug}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -102,29 +102,29 @@ function PropertyCard({ property, index }: { property: Property; index: number }
       <div className="flex flex-col gap-0.5">
         <div className="flex items-start justify-between">
           <Link href={`/real-estate/${propertySlug}`}>
-            <h3 className="max-w-[80%] truncate text-[14px] font-semibold text-gray-900 hover:underline">
+            <h3 className="max-w-[80%] truncate text-[12px] font-semibold text-gray-900 hover:underline">
               {property.title}
             </h3>
           </Link>
           <div className="flex shrink-0 items-center gap-1">
             <Star className="size-3 fill-gray-900 text-gray-900" />
-            <span className="text-[13px] font-light text-gray-900">{rating}</span>
+            <span className="text-[11px] font-light text-gray-900">{rating}</span>
           </div>
         </div>
 
-        <p className="flex items-center gap-1 truncate text-[13px] text-gray-500">
-          <MapPin className="size-3 shrink-0" />
+        <p className="flex items-center gap-1 truncate text-[11px] text-gray-500">
+          <MapPin className="size-2.5 shrink-0" />
           {location}
         </p>
 
         {property.status === "active" ? (
-          <p className="mt-0.5 text-[13px] text-gray-900">
+          <p className="mt-0.5 text-[12px] text-gray-900">
             <span className="font-semibold">{price}</span>
           </p>
         ) : (
-          <p className="mt-0.5 text-[13px]">
+          <p className="mt-0.5 text-[12px]">
             <span className="font-semibold text-gray-900">{price}</span>
-            <span className="ml-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium capitalize text-gray-500">
+            <span className="ml-1.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium capitalize text-gray-500">
               {String(property.status)}
             </span>
           </p>

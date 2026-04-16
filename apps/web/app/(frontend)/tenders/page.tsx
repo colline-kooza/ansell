@@ -57,7 +57,7 @@ function TenderCard({ tender, index }: { tender: Tender; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.04 }}
-      className="group relative rounded-2xl border border-gray-100 bg-white p-3 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-5"
+      className="group relative rounded-2xl border border-gray-100 bg-white p-2.5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-4"
     >
       <Link href={`/tenders/${tender.id}`} className="absolute inset-0 z-10" aria-label={tender.title} />
 
@@ -82,7 +82,7 @@ function TenderCard({ tender, index }: { tender: Tender; index: number }) {
 
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-start gap-1.5">
-              <h3 className="line-clamp-2 text-[15px] font-bold text-gray-900 transition-colors group-hover:text-primary sm:line-clamp-1 sm:text-base">
+              <h3 className="line-clamp-2 text-[17px] font-bold text-gray-900 transition-colors group-hover:text-primary sm:line-clamp-1 sm:text-[17px]">
                 {tender.title}
               </h3>
               {tender.is_featured && (
@@ -124,7 +124,7 @@ function TenderCard({ tender, index }: { tender: Tender; index: number }) {
                 </span>
               )}
               {(tender.views ?? 0) > 0 && (
-                <span className="hidden items-center gap-1 text-gray-400 sm:flex">
+                <span className="flex items-center gap-1 text-emerald-600">
                   <Eye className="size-3" />
                   {tender.views.toLocaleString()} views
                 </span>

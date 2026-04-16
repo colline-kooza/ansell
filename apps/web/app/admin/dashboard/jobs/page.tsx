@@ -82,6 +82,7 @@ function JobFormModal({
   const createMutation = useAdminCreateJob();
   const updateMutation = useAdminUpdateJob();
   const isEditing = !!job;
+  const [pdfUploading, setPdfUploading] = useState(false);
   const [form, setForm] = useState<JobFormData>(
     job ? {
       title: job.title || "", 
@@ -154,7 +155,7 @@ function JobFormModal({
     } catch {}
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending || pdfUploading;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -240,6 +241,7 @@ function JobFormModal({
                 <SingleFileUpload
                   value={form.pdf_url}
                   onChange={(url) => set("pdf_url", url)}
+                  onUploading={setPdfUploading}
                   maxSizeMb={10}
                   emptyTitle="Upload job attachment PDF"
                   emptyHint="PDF only, up to 10MB"
@@ -252,7 +254,7 @@ function JobFormModal({
           <Button variant="outline" size="sm" onClick={onClose} className="text-[13px]">Cancel</Button>
           <Button size="sm" onClick={handleSubmit} disabled={isPending} className="text-[13px] gap-1.5">
             {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {isEditing ? "Save Changes" : "Post Job"}
+            {pdfUploading ? "Uploading PDF..." : isEditing ? "Save Changes" : "Post Job"}
           </Button>
         </DialogFooter>
       </DialogContent>

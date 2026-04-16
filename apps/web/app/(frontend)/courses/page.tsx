@@ -33,7 +33,7 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.04 }}
-      className="group relative rounded-2xl border border-gray-100 bg-white p-5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100"
+      className="group relative rounded-2xl border border-gray-100 bg-white p-3 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-gray-100 sm:p-4"
     >
       <Link href={`/courses/${course.id}`} className="absolute inset-0 z-10" aria-label={course.title} />
 
@@ -56,7 +56,7 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
         {/* Body */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
-            <h3 className="text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="text-[17px] font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
               {course.title}
             </h3>
             {course.is_featured && (
