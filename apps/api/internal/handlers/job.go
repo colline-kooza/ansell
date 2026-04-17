@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"ansell-backend-api/internal/models"
 	"ansell-backend-api/internal/types"
@@ -273,30 +274,43 @@ func (h *JobHandler) CreateOwnerJob(c *gin.Context) {
 		return
 	}
 
+	qualifications := req.Qualifications
+	if qualifications == "" && req.Requirements != "" {
+		qualifications = req.Requirements
+	}
+
+	appDeadline := req.ApplicationDeadline
+	if appDeadline == nil && req.Deadline != "" {
+		if t, err := time.Parse("2006-01-02", req.Deadline); err == nil {
+			appDeadline = &t
+		}
+	}
+
 	job := models.Job{
-		CompanyID:          &company.ID,
-		PostedByID:         userID,
-		Title:              req.Title,
-		Description:        req.Description,
-		Category:           req.Category,
-		JobType:            req.JobType,
-		ExperienceLevel:    req.ExperienceLevel,
-		CareerLevel:        req.CareerLevel,
-		SalaryMin:          req.SalaryMin,
-		SalaryMax:          req.SalaryMax,
-		SalaryCurrency:     req.SalaryCurrency,
-		SalaryPeriod:       req.SalaryPeriod,
-		IsSalaryVisible:    req.IsSalaryVisible,
-		City:               req.City,
-		Location:           req.Location,
-		Skills:             req.Skills,
-		Qualifications:     req.Qualifications,
-		ApplicationDeadline: req.ApplicationDeadline,
-		ApplicationEmail:   req.ApplicationEmail,
-		ApplicationURL:     req.ApplicationURL,
-		ApplicationType:    req.ApplicationType,
-		IsFeatured:         req.IsFeatured,
-		Status:             "pending_review",
+		CompanyID:           &company.ID,
+		PostedByID:          userID,
+		Title:               req.Title,
+		Description:         req.Description,
+		Category:            req.Category,
+		JobType:             req.JobType,
+		ExperienceLevel:     req.ExperienceLevel,
+		CareerLevel:         req.CareerLevel,
+		SalaryMin:           req.SalaryMin,
+		SalaryMax:           req.SalaryMax,
+		SalaryCurrency:      req.SalaryCurrency,
+		SalaryPeriod:        req.SalaryPeriod,
+		IsSalaryVisible:     req.IsSalaryVisible,
+		City:                req.City,
+		Location:            req.Location,
+		Skills:              req.Skills,
+		Qualifications:      qualifications,
+		ApplicationDeadline: appDeadline,
+		ApplicationEmail:    req.ApplicationEmail,
+		ApplicationURL:      req.ApplicationURL,
+		ApplicationType:     req.ApplicationType,
+		PdfUrl:              req.PdfUrl,
+		IsFeatured:          req.IsFeatured,
+		Status:              "pending_review",
 	}
 
 	if err := h.db.Create(&job).Error; err != nil {
@@ -349,11 +363,24 @@ func (h *JobHandler) UpdateOwnerJob(c *gin.Context) {
 	if req.Location != "" { updates["location"] = req.Location }
 	if req.Skills != "" { updates["skills"] = req.Skills }
 	if req.Qualifications != "" { updates["qualifications"] = req.Qualifications }
+	if req.Requirements != "" { updates["qualifications"] = req.Requirements }
 	if req.ApplicationDeadline != nil { updates["application_deadline"] = req.ApplicationDeadline }
+	if req.Deadline != "" {
+		if t, err := time.Parse("2006-01-02", req.Deadline); err == nil {
+			updates["application_deadline"] = t
+		}
+	}
 	if req.ApplicationEmail != "" { updates["application_email"] = req.ApplicationEmail }
 	if req.ApplicationURL != "" { updates["application_url"] = req.ApplicationURL }
 	if req.ApplicationType != "" { updates["application_type"] = req.ApplicationType }
-	if req.IsFeatured != nil { updates["is_featured"] = *req.IsFeatured }
+	if req.PdfUrl != nil { 
+		updates["pdf_url"] = *req.PdfUrl 
+		job.PdfUrl = *req.PdfUrl
+	}
+	if req.IsFeatured != nil { 
+		updates["is_featured"] = *req.IsFeatured 
+		job.IsFeatured = *req.IsFeatured
+	}
 
 	if err := h.db.Model(&job).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to update job"})
@@ -471,6 +498,75 @@ func (h *JobHandler) UpdateApplicationStatus(c *gin.Context) {
 // Admin Methods
 // ─────────────────────────────────────
 
+// PUT /api/admin/jobs/:id  — admin can update any job, no ownership check
+func (h *JobHandler) AdminUpdateJob(c *gin.Context) {
+	id := c.Param("id")
+	var job models.Job
+	if err := h.db.First(&job, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, types.ErrorResponse{Success: false, Message: "Job not found"})
+		return
+	}
+
+	var req types.UpdateJobRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Success: false, Message: "Invalid request", Error: err.Error()})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if req.Title != "" { updates["title"] = req.Title }
+	if req.Description != "" { updates["description"] = req.Description }
+	if req.Category != "" { updates["category"] = req.Category }
+	if req.JobType != "" { updates["job_type"] = req.JobType }
+	if req.ExperienceLevel != "" { updates["experience_level"] = req.ExperienceLevel }
+	if req.CareerLevel != "" { updates["career_level"] = req.CareerLevel }
+	if req.SalaryMin != nil { updates["salary_min"] = req.SalaryMin }
+	if req.SalaryMax != nil { updates["salary_max"] = req.SalaryMax }
+	if req.SalaryCurrency != "" { updates["salary_currency"] = req.SalaryCurrency }
+	if req.SalaryPeriod != "" { updates["salary_period"] = req.SalaryPeriod }
+	if req.IsSalaryVisible != nil { updates["is_salary_visible"] = *req.IsSalaryVisible }
+	if req.City != "" { updates["city"] = req.City }
+	if req.Location != "" { updates["location"] = req.Location }
+	if req.Skills != "" { updates["skills"] = req.Skills }
+	if req.Qualifications != "" { updates["qualifications"] = req.Qualifications }
+	if req.Requirements != "" { updates["qualifications"] = req.Requirements }
+	if req.ApplicationDeadline != nil { updates["application_deadline"] = req.ApplicationDeadline }
+	if req.Deadline != "" {
+		if t, err := time.Parse("2006-01-02", req.Deadline); err == nil {
+			updates["application_deadline"] = t
+		}
+	}
+	if req.ApplicationEmail != "" { updates["application_email"] = req.ApplicationEmail }
+	if req.ApplicationURL != "" { updates["application_url"] = req.ApplicationURL }
+	if req.ApplicationType != "" { updates["application_type"] = req.ApplicationType }
+	// Always update pdf_url when provided (even empty string clears it intentionally)
+	if req.PdfUrl != nil {
+		updates["pdf_url"] = *req.PdfUrl
+		job.PdfUrl = *req.PdfUrl
+	}
+	if req.IsFeatured != nil {
+		updates["is_featured"] = *req.IsFeatured
+		job.IsFeatured = *req.IsFeatured
+	}
+	// Admin can change status directly
+	if req.Status != "" {
+		updates["status"] = req.Status
+		job.Status = req.Status
+	}
+
+	if len(updates) == 0 {
+		c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "No changes", Data: job})
+		return
+	}
+
+	if err := h.db.Model(&job).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to update job"})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "Job updated", Data: job})
+}
+
 // GET /api/admin/jobs
 func (h *JobHandler) AdminListJobs(c *gin.Context) {
 	status := c.Query("status")
@@ -519,30 +615,43 @@ func (h *JobHandler) AdminCreateJob(c *gin.Context) {
 		return
 	}
 
+	adminQuals := req.Qualifications
+	if adminQuals == "" && req.Requirements != "" {
+		adminQuals = req.Requirements
+	}
+
+	adminDeadline := req.ApplicationDeadline
+	if adminDeadline == nil && req.Deadline != "" {
+		if t, err := time.Parse("2006-01-02", req.Deadline); err == nil {
+			adminDeadline = &t
+		}
+	}
+
 	job := models.Job{
-		CompanyID:          cID,
-		PostedByID:         adminID,
-		Title:              req.Title,
-		Description:        req.Description,
-		Category:           req.Category,
-		JobType:            req.JobType,
-		ExperienceLevel:    req.ExperienceLevel,
-		CareerLevel:        req.CareerLevel,
-		SalaryMin:          req.SalaryMin,
-		SalaryMax:          req.SalaryMax,
-		SalaryCurrency:     req.SalaryCurrency,
-		SalaryPeriod:       req.SalaryPeriod,
-		IsSalaryVisible:    req.IsSalaryVisible,
-		City:               req.City,
-		Location:           req.Location,
-		Skills:             req.Skills,
-		Qualifications:     req.Qualifications,
-		ApplicationDeadline: req.ApplicationDeadline,
-		ApplicationEmail:   req.ApplicationEmail,
-		ApplicationURL:     req.ApplicationURL,
-		ApplicationType:    req.ApplicationType,
-		IsFeatured:         req.IsFeatured,
-		Status:             "active", // Admin created jobs are active by default
+		CompanyID:           cID,
+		PostedByID:          adminID,
+		Title:               req.Title,
+		Description:         req.Description,
+		Category:            req.Category,
+		JobType:             req.JobType,
+		ExperienceLevel:     req.ExperienceLevel,
+		CareerLevel:         req.CareerLevel,
+		SalaryMin:           req.SalaryMin,
+		SalaryMax:           req.SalaryMax,
+		SalaryCurrency:      req.SalaryCurrency,
+		SalaryPeriod:        req.SalaryPeriod,
+		IsSalaryVisible:     req.IsSalaryVisible,
+		City:                req.City,
+		Location:            req.Location,
+		Skills:              req.Skills,
+		Qualifications:      adminQuals,
+		ApplicationDeadline: adminDeadline,
+		ApplicationEmail:    req.ApplicationEmail,
+		ApplicationURL:      req.ApplicationURL,
+		ApplicationType:     req.ApplicationType,
+		PdfUrl:              req.PdfUrl,
+		IsFeatured:          req.IsFeatured,
+		Status:              "active", // Admin created jobs are active by default
 	}
 
 	if err := h.db.Create(&job).Error; err != nil {
@@ -580,7 +689,8 @@ func (h *JobHandler) resolveAdminCompanyID(adminID uuid.UUID, requestedCompanyID
 
 	var admin models.User
 	if err := h.db.First(&admin, "id = ?", adminID).Error; err != nil {
-		return nil, fmt.Errorf("failed to load the admin account")
+		// Admin user not found — post job without a company association
+		return nil, nil
 	}
 
 	company = models.Company{
@@ -597,7 +707,8 @@ func (h *JobHandler) resolveAdminCompanyID(adminID uuid.UUID, requestedCompanyID
 	}
 
 	if err := h.db.Create(&company).Error; err != nil {
-		return nil, fmt.Errorf("failed to create the default admin company")
+		// Company creation failed — post job without a company association
+		return nil, nil
 	}
 
 	return &company.ID, nil

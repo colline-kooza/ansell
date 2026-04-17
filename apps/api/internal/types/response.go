@@ -178,10 +178,13 @@ type CreateJobRequest struct {
 	Location            string     `json:"location"`
 	Skills              string     `json:"skills"`         // JSON array string
 	Qualifications      string     `json:"qualifications"` // JSON array string
+	Requirements        string     `json:"requirements"`   // alias for qualifications (frontend compat)
 	ApplicationDeadline *time.Time `json:"application_deadline"`
+	Deadline            string     `json:"deadline"` // date string alias (frontend compat, e.g. "2024-01-15")
 	ApplicationEmail    string     `json:"application_email"`
 	ApplicationURL      string     `json:"application_url"`
 	ApplicationType     string     `json:"application_type"`
+	PdfUrl              string     `json:"pdf_url"`
 	IsFeatured          bool       `json:"is_featured"`
 }
 
@@ -202,10 +205,13 @@ type UpdateJobRequest struct {
 	Location            string     `json:"location"`
 	Skills              string     `json:"skills"`
 	Qualifications      string     `json:"qualifications"`
+	Requirements        string     `json:"requirements"` // alias for qualifications (frontend compat)
 	ApplicationDeadline *time.Time `json:"application_deadline"`
+	Deadline            string     `json:"deadline"` // date string alias (frontend compat)
 	ApplicationEmail    string     `json:"application_email"`
 	ApplicationURL      string     `json:"application_url"`
 	ApplicationType     string     `json:"application_type"`
+	PdfUrl              *string    `json:"pdf_url"`
 	IsFeatured          *bool      `json:"is_featured"`
 	Status              string     `json:"status"`
 }

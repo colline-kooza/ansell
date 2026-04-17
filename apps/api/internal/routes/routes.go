@@ -204,7 +204,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			// Jobs (admin CRUD)
 			admin.GET("/jobs", jobHandler.AdminListJobs)
 			admin.POST("/jobs", jobHandler.AdminCreateJob)
-			admin.PUT("/jobs/:id", jobHandler.UpdateOwnerJob)    // reuse update logic
+			admin.PUT("/jobs/:id", jobHandler.AdminUpdateJob)
 			admin.DELETE("/jobs/:id", jobHandler.DeleteOwnerJob) // reuse delete logic
 			admin.PATCH("/jobs/:id/approve", jobHandler.AdminApproveJob)
 			admin.PATCH("/jobs/:id/reject", jobHandler.AdminRejectJob)
