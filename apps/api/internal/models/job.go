@@ -38,6 +38,7 @@ type Job struct {
 	ApplicationEmail   string     `json:"application_email"`
 	ApplicationURL     string     `json:"application_url"`
 	ApplicationType    string     `gorm:"default:'internal'" json:"application_type"` // internal, external_email, external_url
+	PdfUrl             string     `gorm:"column:pdf_url" json:"pdf_url"`
 	IsFeatured         bool       `gorm:"default:false" json:"is_featured"`
 	IsActive           bool       `gorm:"default:true" json:"is_active"`
 	Status             string     `gorm:"type:varchar(20);default:'pending_review';index" json:"status"` // draft, pending_review, active, closed, rejected
