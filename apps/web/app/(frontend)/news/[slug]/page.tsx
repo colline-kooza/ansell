@@ -76,7 +76,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
 
   const categoryLabel = getArticleCategoryLabel(article.category);
   const date = format(new Date(article.published_at ?? article.created_at), "MMM d, yyyy");
-  const authorName = `${article.author?.first_name ?? ""} ${article.author?.last_name ?? ""}`.trim() || "Ansell Editorial";
+  const authorName = `${article.author?.first_name ?? ""} ${article.author?.last_name ?? ""}`.trim() || "Anasell Editorial";
 
   const handleCopyLink = () => {
       navigator.clipboard.writeText(window.location.href);
@@ -260,7 +260,7 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
                <div className="rounded-2xl bg-slate-900 px-6 py-8 text-white relative overflow-hidden group shadow-lg">
                    <div className="absolute top-0 right-0 size-24 bg-primary/20 blur-3xl -mr-12 -mt-12" />
                    <Badge variant="outline" className="text-[8px] border-white/10 text-white/40 mb-3 px-1.5 tracking-widest font-bold">INFO</Badge>
-                   <h3 className="text-base font-bold mb-2">Build your presence on Ansell.</h3>
+                   <h3 className="text-base font-bold mb-2">Build your presence on Anasell.</h3>
                    <p className="text-[10px] text-gray-400 leading-relaxed mb-5">
                        Register your company to list jobs, tenders, and reach thousands of users.
                    </p>

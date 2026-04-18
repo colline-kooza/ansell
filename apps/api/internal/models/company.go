@@ -31,6 +31,7 @@ type Company struct {
 	IsVerified bool `gorm:"default:false" json:"is_verified"`
 	IsActive   bool `gorm:"default:true" json:"is_active"`
 	Slug       string `gorm:"uniqueIndex" json:"slug"`
+	Views      int  `gorm:"default:0" json:"views"`
 }
 
 func (c *Company) BeforeCreate(tx *gorm.DB) error {

@@ -28,3 +28,7 @@ nginx/ssl/
 Thumbs.db
 apps/web/.next/
 apps/web/node_modules/
+
+# Go build cache
+apps/api/.gocache/
+apps/api/tmp/

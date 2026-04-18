@@ -145,7 +145,7 @@ export default function OwnerOnboardingPage() {
             <div className="absolute right-0.5 top-0.5 h-5 w-2 skew-x-[20deg] rounded-sm bg-primary/80" />
           </div>
           <div className="leading-none">
-            <p className="text-[1.5rem] font-black tracking-[-0.06em] text-white">Ansell</p>
+            <p className="text-[1.5rem] font-black tracking-[-0.06em] text-white">Anasell</p>
             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary/70">Real Estate</p>
           </div>
         </Link>
@@ -269,7 +269,7 @@ export default function OwnerOnboardingPage() {
                         type="tel"
                         value={form.phone_number}
                         onChange={(e) => update("phone_number", e.target.value)}
-                        placeholder="+256 700 000 000"
+                        placeholder="+211 922 000 000"
                         className="w-full h-12 rounded-xl border border-white/10 bg-white/5 px-4 text-[13px] font-medium text-white placeholder:text-white/30 outline-none focus:border-primary focus:bg-white/10 transition-all"
                       />
                     </div>

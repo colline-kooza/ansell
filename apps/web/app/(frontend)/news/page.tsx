@@ -148,7 +148,7 @@ function NewsContent() {
                     <span className="text-foreground font-medium">News</span>
                 </nav>
                 <h1 className="text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">
-                    Ansell <span className="text-primary italic">News</span>
+                    Anasell <span className="text-primary italic">News</span>
                 </h1>
                 <p className="mt-2 text-[13px] text-muted-foreground max-w-md">
                     Stay updated with the latest headlines, government announcements, and local stories from across South Sudan.

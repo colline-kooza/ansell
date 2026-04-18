@@ -11,7 +11,7 @@ export function CompanyRegisterBanner() {
         <div className="flex-1">
           <h3 className="text-base font-bold text-foreground">Register Your Company</h3>
           <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-            Join hundreds of businesses listed on Ansell. Get verified, post jobs, and reach thousands of professionals.
+            Join hundreds of businesses listed on Anasell. Get verified, post jobs, and reach thousands of professionals.
           </p>
         </div>
         <Link href="/become-company" className="shrink-0 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-95 flex items-center gap-1.5">

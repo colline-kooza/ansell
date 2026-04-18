@@ -41,10 +41,10 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
     (job as any).company_logo ||
     (job as any).logo ||
     (job as any).company_logo_url;
-  const companyName = job.company_name || "Ansell";
+  const companyName = job.company_name || "Anasell";
   const initial = companyName.charAt(0).toUpperCase();
 
-  if (!logoUrl && !imgError && companyName !== "Ansell") {
+  if (!logoUrl && !imgError && companyName !== "Anasell") {
     const domain = companyName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() + ".com";
     logoUrl = `https://logo.clearbit.com/${domain}`;
   }
@@ -78,10 +78,7 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
 
   const handlePdfDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!pdfUrl) {
-      router.push(`/job-board/${job.id}`);
-      return;
-    }
+    if (!pdfUrl) return;
 
     const toastId = toast.loading("Preparing PDF...");
     try {

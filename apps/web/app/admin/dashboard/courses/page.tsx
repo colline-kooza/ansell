@@ -47,13 +47,14 @@ interface CourseFormData {
   title: string; description: string; category: string; level: string;
   duration_hours: string; price: string; currency: string; instructor_name: string;
   thumbnail_url: string; video_url: string; status: string;
-  is_featured: boolean; is_free: boolean;
+  is_featured: boolean; is_free: boolean; institution_link: string;
 }
 
 const DEFAULT_FORM: CourseFormData = {
   title: "", description: "", category: "other", level: "beginner",
   duration_hours: "", price: "", currency: "USD", instructor_name: "",
   thumbnail_url: "", video_url: "", status: "draft", is_featured: false, is_free: false,
+  institution_link: "",
 };
 
 function CourseFormModal({ open, onClose, course }: { open: boolean; onClose: () => void; course: Course | null }) {
@@ -62,19 +63,20 @@ function CourseFormModal({ open, onClose, course }: { open: boolean; onClose: ()
   const isEditing = !!course;
   const [form, setForm] = useState<CourseFormData>(
     course ? {
-      title: course.title, 
-      description: course.description || course.content || "", 
+      title: course.title,
+      description: course.description || course.content || "",
       category: course.category || "other",
-      level: course.level || "beginner", 
+      level: course.level || "beginner",
       duration_hours: course.duration_hours ? String(course.duration_hours) : "",
-      price: course.price ? String(course.price) : "", 
+      price: course.price ? String(course.price) : "",
       currency: course.currency || "USD",
-      instructor_name: course.instructor_name || (course as any).instructor?.first_name ? `${(course as any).instructor.first_name} ${(course as any).instructor.last_name}` : "", 
+      instructor_name: course.instructor_name || (course as any).instructor?.first_name ? `${(course as any).instructor.first_name} ${(course as any).instructor.last_name}` : "",
       thumbnail_url: course.thumbnail_url || (course as any).image_url || "",
-      video_url: course.video_url || "", 
-      status: course.status, 
-      is_featured: course.is_featured, 
+      video_url: course.video_url || "",
+      status: course.status,
+      is_featured: course.is_featured,
       is_free: course.is_free,
+      institution_link: (course as any).institution_link || "",
     } : DEFAULT_FORM
   );
   const initialThumbnail = course 
@@ -104,6 +106,7 @@ function CourseFormModal({ open, onClose, course }: { open: boolean; onClose: ()
           status: course.status,
           is_featured: course.is_featured,
           is_free: course.is_free,
+          institution_link: (course as any).institution_link || "",
         });
         setThumbnails((course?.thumbnail_url || (course as any)?.image_url) ? [course.thumbnail_url || (course as any).image_url] : []);
         setVideoUrl(course?.video_url || "");
@@ -143,11 +146,12 @@ function CourseFormModal({ open, onClose, course }: { open: boolean; onClose: ()
     if (!form.title.trim()) { toast.error("Title is required"); return; }
     const payload = {
       ...form,
-      provider: form.instructor_name || "Ansell",
+      provider: form.instructor_name || "Anasell",
       duration: form.duration_hours ? `${form.duration_hours} hours` : "N/A",
       thumbnail_url: thumbnails[0] || "",
       video_url: videoUrl || "",
       price: form.price ? Number(form.price) : 0,
+      institution_link: form.institution_link || "",
     };
     try {
       if (isEditing && course) await updateMutation.mutateAsync({ id: course.id, payload: payload as any });
@@ -200,6 +204,10 @@ function CourseFormModal({ open, onClose, course }: { open: boolean; onClose: ()
               <div>
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Instructor</Label>
                 <Input value={form.instructor_name} onChange={e => set("instructor_name", e.target.value)} placeholder="Instructor name" className="h-9 text-[13px]" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-[11px] text-gray-500 mb-1.5 block">Institution Link (enrollment URL)</Label>
+                <Input value={form.institution_link} onChange={e => set("institution_link", e.target.value)} placeholder="https://institution.edu/apply" className="h-9 text-[13px]" type="url" />
               </div>
               <div>
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Status</Label>

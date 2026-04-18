@@ -4,8 +4,8 @@ import { use } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
-  ArrowLeft, Play, Clock, Users, Star, Award, CheckCircle2,
-  BookOpen, Globe, Tag, AlertCircle, ChevronRight,
+  ArrowLeft, Play, Clock, Users, Star, CheckCircle2,
+  BookOpen, Globe, Tag, AlertCircle, ChevronRight, ExternalLink, MapPin,
 } from "lucide-react";
 import { useCourse } from "@/hooks/use-courses";
 
@@ -52,6 +52,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   const thumbnail = course.thumbnail_url || `https://picsum.photos/seed/course-${course.id}/800/450`;
   const instructorAvatar = course.instructor_avatar || `https://picsum.photos/seed/inst-${course.id}/80/80`;
   const duration = course.duration_hours ? `${course.duration_hours} hours` : null;
+  const institutionLink = (course as any).institution_link as string | undefined;
+
+  const applyUrl = institutionLink
+    ? (institutionLink.startsWith("http") ? institutionLink : `https://${institutionLink}`)
+    : null;
 
   return (
     <div className="min-h-screen bg-[#f4f8fb]">
@@ -131,7 +136,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={instructorAvatar} alt={course.instructor_name ?? "Instructor"} className="size-10 rounded-full object-cover" />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{course.instructor_name ?? "Ansell Expert"}</p>
+                  <p className="text-sm font-semibold text-gray-900">{course.instructor_name ?? "Anasell Expert"}</p>
                   <p className="text-xs text-muted-foreground">Course Instructor</p>
                 </div>
                 <CheckCircle2 className="size-4 fill-current text-emerald-500 ml-1" />
@@ -159,28 +164,36 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           <div className="w-full shrink-0 lg:w-72">
             <div className="lg:sticky lg:top-28 space-y-4">
               <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-                {/* Price */}
-                {course.price !== undefined && course.price !== null ? (
-                  <div className="mb-4 text-center">
-                    <p className="text-3xl font-black text-gray-900">
-                      {course.currency ?? "SSP"} {Number(course.price).toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">One-time payment</p>
-                  </div>
-                ) : (
-                  <div className="mb-4 text-center">
-                    <p className="text-2xl font-black text-emerald-600">Free</p>
-                  </div>
-                )}
+                {/* Institution note */}
+                <div className="mb-4 rounded-xl bg-primary/5 border border-primary/10 p-3 text-center">
+                  <p className="text-xs font-semibold text-primary">Advertised Course</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground leading-4">
+                    This course is offered by {course.instructor_name || (course as any).provider || "an institution"}. Apply directly through their official platform.
+                  </p>
+                </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-md"
-                >
-                  Enroll Now
-                  <ChevronRight className="inline size-4 ml-1" />
-                </motion.button>
+                {/* Apply button */}
+                {applyUrl ? (
+                  <a
+                    href={applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-md hover:brightness-95 transition"
+                  >
+                    Apply at Institution
+                    <ExternalLink className="size-4" />
+                  </a>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-md"
+                    onClick={() => window.open(applyUrl || "#", "_blank")}
+                  >
+                    Apply for Course
+                    <ChevronRight className="inline size-4 ml-1" />
+                  </motion.button>
+                )}
 
                 <div className="mt-4 space-y-2.5">
                   {duration && (
@@ -201,10 +214,22 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                       <span className="font-semibold">{course.language}</span>
                     </div>
                   )}
+                  {(course as any).city && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1"><MapPin className="size-3.5" />Location</span>
+                      <span className="font-semibold">{(course as any).city}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground flex items-center gap-1"><Users className="size-3.5" />Enrolled</span>
                     <span className="font-semibold">{(course.enrolled_count ?? 0).toLocaleString()}</span>
                   </div>
+                  {(course as any).mode && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Mode</span>
+                      <span className="font-semibold capitalize">{String((course as any).mode).replace(/_/g, " ")}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

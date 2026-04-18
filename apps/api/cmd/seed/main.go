@@ -40,7 +40,11 @@ func main() {
 	seedArticles(db, admin.ID)
 	fmt.Println("✅ Articles seeded.")
 
-	// 5. Seed Tenders
+	// 5. Seed Jobs
+	seedJobs(db, admin.ID, companies)
+	fmt.Println("✅ Jobs seeded.")
+
+	// 6. Seed Tenders
 	seedTenders(db, admin.ID, companies)
 	fmt.Println("✅ Tenders seeded.")
 
@@ -203,6 +207,61 @@ func seedArticles(db *gorm.DB, adminID uuid.UUID) {
 				PublishedAt:   &pubAt,
 			}
 			db.Create(&art)
+		}
+	}
+}
+
+func seedJobs(db *gorm.DB, adminID uuid.UUID, companies []models.Company) {
+	if len(companies) == 0 {
+		return
+	}
+	jobs := []struct {
+		Title    string
+		Type     string
+		Category string
+		City     string
+		SalMin   float64
+		SalMax   float64
+		PdfUrl   string
+	}{
+		{"Programme Officer", "full_time", "ngo_un", "Juba", 2500, 3500, "https://www.w3.org/WAI/WCAG21/wcag21.pdf"},
+		{"Finance Manager", "full_time", "international", "Juba", 3000, 5000, "https://www.w3.org/WAI/WCAG21/wcag21.pdf"},
+		{"Field Coordinator", "contract", "ngo_un", "Wau", 1800, 2800, ""},
+		{"IT Support Specialist", "full_time", "private_sector", "Juba", 1200, 2000, ""},
+		{"Logistics Officer", "full_time", "international", "Malakal", 2000, 3000, "https://www.w3.org/WAI/WCAG21/wcag21.pdf"},
+		{"Human Resources Assistant", "full_time", "government", "Juba", 800, 1500, ""},
+		{"Project Manager", "contract", "ngo_un", "Juba", 4000, 6000, "https://www.w3.org/WAI/WCAG21/wcag21.pdf"},
+	}
+
+	for i, j := range jobs {
+		var existing models.Job
+		if err := db.Where("title = ?", j.Title).First(&existing).Error; err != nil {
+			salMin := j.SalMin
+			salMax := j.SalMax
+			company := companies[i%len(companies)]
+			job := models.Job{
+				CompanyID:       &company.ID,
+				PostedByID:      adminID,
+				Title:           j.Title,
+				Description:     fmt.Sprintf("We are looking for a qualified %s to join our team in %s. The ideal candidate will have relevant experience and strong communication skills.", j.Title, j.City),
+				Category:        j.Category,
+				JobType:         j.Type,
+				ExperienceLevel: "mid",
+				CareerLevel:     "mid_level",
+				SalaryMin:       &salMin,
+				SalaryMax:       &salMax,
+				SalaryCurrency:  "USD",
+				SalaryPeriod:    "per_month",
+				IsSalaryVisible: true,
+				City:            j.City,
+				Location:        j.City + ", South Sudan",
+				ApplicationType: "internal",
+				PdfUrl:          j.PdfUrl,
+				IsFeatured:      i < 2,
+				IsActive:        true,
+				Status:          "active",
+			}
+			db.Create(&job)
 		}
 	}
 }

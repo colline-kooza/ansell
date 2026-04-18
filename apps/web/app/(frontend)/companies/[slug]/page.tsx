@@ -180,11 +180,21 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ slug: 
             </div>
 
             <div className="flex gap-2 pb-2">
-              <Button className="px-6 font-semibold">
-                Follow
-              </Button>
-              <Button variant="outline" size="icon" className="group border-slate-200">
-                <ExternalLink className="size-4 group-hover:text-primary transition-colors" />
+              {company.website ? (
+                <a
+                  href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-sm bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:brightness-95"
+                >
+                  <Globe className="size-4" />
+                  Visit Website
+                </a>
+              ) : null}
+              <Button variant="outline" size="icon" className="group border-slate-200" asChild>
+                <a href={`mailto:${company.email}`} title="Email company">
+                  <ExternalLink className="size-4 group-hover:text-primary transition-colors" />
+                </a>
               </Button>
             </div>
           </div>
@@ -371,7 +381,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ slug: 
                  </div>
                  <h3 className="text-lg font-bold mb-2 leading-tight">Verified Business Identity</h3>
                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                   {company.company_name} has completed our identity verification process and is a trusted member of the Ansell community.
+                   {company.company_name} has completed our identity verification process and is a trusted member of the Anasell community.
                  </p>
                  <Link href="/id-verification" className="inline-flex items-center gap-2 text-[10px] font-bold text-primary hover:gap-3 transition-all uppercase tracking-widest">
                     Verification Policy <ArrowRight className="size-3.5" />

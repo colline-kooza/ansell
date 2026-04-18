@@ -34,7 +34,7 @@ function AdvertsHero() {
           <h1 className="text-xl font-bold tracking-tight md:text-4xl">Video Adverts</h1>
         </div>
         <p className="mb-5 max-w-sm text-center text-xs font-medium opacity-75 md:text-[13px]">
-          Reach thousands of Ansell visitors with targeted video advertising.
+          Reach thousands of Anasell visitors with targeted video advertising.
         </p>
       </div>
       <button className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition hover:bg-white/30 md:flex">
@@ -51,7 +51,7 @@ function AdvertsHero() {
 
 function AdvertCard({ advert }: { advert: VideoAdvert }) {
   const thumbnail = advert.thumbnail_url || `https://picsum.photos/seed/adv-${advert.id}/640/360`;
-  const companyName = advert.company_name || "Ansell";
+  const companyName = advert.company_name || "Anasell";
   const companyInitial = companyName.charAt(0).toUpperCase();
   const colors = ["bg-blue-500", "bg-purple-500", "bg-teal-500", "bg-amber-500", "bg-rose-500"];
   const logoBg = colors[companyName.length % colors.length];

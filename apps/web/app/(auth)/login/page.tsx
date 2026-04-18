@@ -10,6 +10,7 @@ import { Toaster, toast } from "sonner";
 import { buildApiUrl } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import type { AuthUser } from "@/context/auth-context";
+import { CategoryCarousel } from "@/components/auth/category-carousel";
 
 type LoginResponse = {
   success: boolean;
@@ -117,7 +118,7 @@ function LoginContent() {
       <div className="relative hidden overflow-hidden bg-primary lg:flex lg:h-screen lg:w-[58%]">
         <Image
           src="https://picsum.photos/seed/ansell-auth-hero/1400/1800"
-          alt="Ansell auth background"
+          alt="Anasell auth background"
           fill
           priority
           className="object-cover blur-[2px]"
@@ -134,25 +135,19 @@ function LoginContent() {
                 <div className="absolute right-1 top-1 h-7 w-3 skew-x-[20deg] rounded-sm bg-[#10210f]/88" />
               </div>
               <div className="leading-none text-[#10210f]">
-                <p className="text-[1.9rem] font-black tracking-[-0.06em]">Ansell</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#10210f]/72">
+                <p className="text-[1.9rem] font-black tracking-[-0.06em]">Anasell</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#10210f]/72">
                   All Opportunities. One Platform.
                 </p>
               </div>
             </div>
           </Link>
 
-          <div className="max-w-xl pb-2 text-[#10210f]">
+          <div className="max-w-xl pb-2">
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#10210f]/72">
               Auth Space
             </p>
-            <h1 className="text-[2rem] leading-[0.95] font-semibold tracking-[-0.06em]">
-              Sign in and manage the Ansell marketplace with confidence.
-            </h1>
-            <p className="mt-5 max-w-lg leading-7 text-[#10210f]/78 text-sm">
-              Clean auth flows for operations teams, sellers, and admins, with
-              your primary green leading the experience.
-            </p>
+            <CategoryCarousel />
           </div>
         </div>
       </div>
@@ -193,7 +188,7 @@ function LoginContent() {
                   <div className="absolute right-1 top-1 h-6 w-3 skew-x-[20deg] rounded-sm bg-primary/90" />
                 </div>
                 <div className="leading-none">
-                  <p className="text-[1.6rem] font-black tracking-[-0.06em] text-white">Ansell</p>
+                  <p className="text-[1.6rem] font-black tracking-[-0.06em] text-white">Anasell</p>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-white/55">
                     All Opportunities. One Platform.
                   </p>

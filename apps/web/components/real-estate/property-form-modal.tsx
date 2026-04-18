@@ -320,7 +320,7 @@ export function PropertyFormModal({ open, onOpenChange, property, isAdmin }: Pro
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-bold uppercase text-gray-500 mb-1.5 block">Contact Phone</Label>
-                    <Input {...register("contact_phone")} placeholder="+256 700 000 000" className="h-10" />
+                    <Input {...register("contact_phone")} placeholder="+211 922 000 000" className="h-10" />
                   </div>
                   <div>
                     <Label className="text-xs font-bold uppercase text-gray-500 mb-1.5 block">Contact Email</Label>

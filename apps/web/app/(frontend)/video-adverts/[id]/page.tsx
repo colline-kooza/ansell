@@ -48,7 +48,7 @@ export default function VideoAdvertDetailPage({ params }: { params: Promise<{ id
   if (isError || !advert) return <NotFound />;
 
   const thumbnail = advert.thumbnail_url || `https://picsum.photos/seed/adv-${advert.id}/800/450`;
-  const companyName = advert.company_name || "Ansell";
+  const companyName = advert.company_name || "Anasell";
   const companyInitial = companyName.charAt(0).toUpperCase();
   const colors = ["bg-blue-500", "bg-purple-500", "bg-teal-500", "bg-amber-500", "bg-rose-500"];
   const logoBg = colors[companyName.length % colors.length];
@@ -143,7 +143,7 @@ export default function VideoAdvertDetailPage({ params }: { params: Promise<{ id
         {/* Advertise CTA */}
         <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
           <p className="text-sm font-bold text-gray-900">Want to advertise your business like this?</p>
-          <p className="mt-1 text-xs text-muted-foreground">Reach thousands of Ansell users with your own video ad.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Reach thousands of Anasell users with your own video ad.</p>
           <Link
             href="/video-adverts/submit"
             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground"

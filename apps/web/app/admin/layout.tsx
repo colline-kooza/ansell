@@ -78,7 +78,7 @@ const SECTIONS: SectionDef[] = [
   {
     title: "Content",
     items: [
-      { label: "Articles / News", href: "/admin/dashboard/articles", icon: Newspaper },
+      // Articles/News hidden from sidebar — page maintained at /admin/dashboard/articles
       { label: "Courses", href: "/admin/dashboard/courses", icon: BookOpen },
       { label: "Enrollments", href: "/admin/dashboard/enrollments", icon: UserCheck },
       { label: "Video Adverts", href: "/admin/dashboard/video-adverts", icon: Video },
@@ -376,7 +376,7 @@ function AdminNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
                 <div className="absolute right-0.5 top-0.5 h-4 w-2 skew-x-[20deg] rounded-sm bg-primary/90" />
               </div>
               <div className="leading-none">
-                <p className="text-[14px] font-black tracking-[-0.06em]">Ansell</p>
+                <p className="text-[14px] font-black tracking-[-0.06em]">Anasell</p>
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-gray-400">Admin</p>
               </div>
             </div>
@@ -488,7 +488,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="absolute right-0.5 top-0.5 h-4 w-2 skew-x-[20deg] rounded-sm bg-primary/90" />
               </div>
               <div className="leading-none">
-                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Ansell</p>
+                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Anasell</p>
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">Admin</p>
               </div>
             </Link>

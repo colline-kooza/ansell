@@ -14,8 +14,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "Ansell — South Sudan Digital Marketplace Hub",
-    template: "%s | Ansell",
+    default: "Anasell — South Sudan Digital Marketplace Hub",
+    template: "%s | Anasell",
   },
   description:
     "Browse property listings, job openings, government tenders, training courses, verified companies, and the latest business news — all built for South Sudan.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "jobs",
     "tenders",
     "Juba",
-    "Ansell",
+    "Anasell",
   ],
   metadataBase: new URL("https://ansell.collinzdev.com"),
 };

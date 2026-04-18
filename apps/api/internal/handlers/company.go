@@ -493,3 +493,10 @@ func (h *CompanyHandler) GetPublicCompany(c *gin.Context) {
 		Data:    company,
 	})
 }
+
+// POST /api/companies/:id/view — increment view counter (fire-and-forget)
+func (h *CompanyHandler) IncrementView(c *gin.Context) {
+	param := c.Param("id")
+	h.db.Model(&models.Company{}).Where("id::text = ? OR slug = ?", param, param).UpdateColumn("views", gorm.Expr("views + 1"))
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "ok"})
+}

@@ -376,7 +376,7 @@ export default function TenderDetailPage({ params }: { params: Promise<{ id: str
 
   const days = daysUntil(tender.submission_deadline);
   const isClosed = days === 0 || tender.status === "closed";
-  const companyName = tender.issuing_organisation || "Ansell";
+  const companyName = tender.issuing_organisation || "Anasell";
   const initial = companyName.charAt(0).toUpperCase();
   const colors = ["bg-blue-500", "bg-purple-500", "bg-teal-500", "bg-amber-500", "bg-rose-500"];
   const logoBg = colors[companyName.length % colors.length];

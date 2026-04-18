@@ -10,6 +10,7 @@ import { Toaster, toast } from "sonner";
 import { buildApiUrl } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import type { AuthUser } from "@/context/auth-context";
+import { CategoryCarousel } from "@/components/auth/category-carousel";
 
 
 
@@ -22,17 +23,6 @@ type RegisterResponse = {
   };
   error?: string;
 };
-
-const backgroundImages = [
-  "https://picsum.photos/seed/ansell-reg-a/320/320",
-  "https://picsum.photos/seed/ansell-reg-b/320/320",
-  "https://picsum.photos/seed/ansell-reg-c/320/320",
-  "https://picsum.photos/seed/ansell-reg-d/320/320",
-  "https://picsum.photos/seed/ansell-reg-e/320/320",
-  "https://picsum.photos/seed/ansell-reg-f/320/320",
-  "https://picsum.photos/seed/ansell-reg-g/320/320",
-  "https://picsum.photos/seed/ansell-reg-h/320/320",
-];
 
 function getRoleRedirect(role: string, fallback: string): string {
   const r = role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
@@ -114,7 +104,7 @@ function RegisterContent() {
 
       login(result.data.token, result.data.user);
 
-      toast.success("Account created! Welcome to Ansell.");
+      toast.success("Account created! Welcome to Anasell.");
       router.push(getRoleRedirect(result.data.user.role, redirectUrl));
     } catch {
       toast.error("Unable to create account right now. Please try again.");
@@ -131,7 +121,7 @@ function RegisterContent() {
       <div className="relative hidden overflow-hidden bg-primary lg:flex lg:h-screen lg:w-[58%]">
         <Image
           src="https://picsum.photos/seed/ansell-reg-hero/1400/1800"
-          alt="Ansell register background"
+          alt="Anasell register background"
           fill
           priority
           className="object-cover blur-[2px]"
@@ -148,25 +138,19 @@ function RegisterContent() {
                 <div className="absolute right-1 top-1 h-7 w-3 skew-x-[20deg] rounded-sm bg-[#10210f]/88" />
               </div>
               <div className="leading-none text-[#10210f]">
-                <p className="text-[1.9rem] font-black tracking-[-0.06em]">Ansell</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#10210f]/72">
-                  Opportunity Central
+                <p className="text-[1.9rem] font-black tracking-[-0.06em]">Anasell</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#10210f]/72">
+                  All Opportunities. One Platform.
                 </p>
               </div>
             </div>
           </Link>
 
-          <div className="max-w-xl pb-2 text-[#10210f]">
+          <div className="max-w-xl pb-2">
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#10210f]/72">
-              Join Ansell
+              Join Anasell
             </p>
-            <h1 className="text-[2rem] leading-[0.95] font-semibold tracking-[-0.06em]">
-              Start your journey in South Sudan&apos;s digital marketplace.
-            </h1>
-            <p className="mt-5 max-w-lg leading-7 text-[#10210f]/78 text-sm">
-              Browse properties, find jobs, discover tenders, and connect with
-              verified companies — all in one place.
-            </p>
+            <CategoryCarousel />
           </div>
         </div>
       </div>
@@ -174,32 +158,7 @@ function RegisterContent() {
       {/* Right panel */}
       <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-[#080d08] px-5 py-8 sm:px-6 lg:min-h-0 lg:w-[42%] lg:px-8">
         <div className="relative w-full max-w-md overflow-hidden bg-[#0b120b] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.85)]">
-          <div className="relative w-full pt-6">
-            <div className="grid w-full grid-cols-4 gap-2 px-4 opacity-55 sm:grid-cols-5 lg:grid-cols-4 lg:px-6">
-              {backgroundImages.map((src, index) => {
-                const row = Math.floor(index / 4);
-                const col = index % 4;
-                const staggerClass = row % 2 === 1 ? "translate-x-3" : "-translate-x-1";
-                const verticalStagger =
-                  (row + col) % 3 === 0
-                    ? "translate-y-3"
-                    : (row + col) % 3 === 1
-                      ? "-translate-y-2"
-                      : "translate-y-1";
-                return (
-                  <div
-                    key={src}
-                    className={`aspect-square overflow-hidden rounded-full bg-white/8 ${staggerClass} ${verticalStagger}`}
-                  >
-                    <Image src={src} alt="" width={160} height={160} className="h-full w-full object-cover" />
-                  </div>
-                );
-              })}
-            </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#0b120b]/80 to-[#0b120b]" />
-          </div>
-
-          <div className="relative z-10 mx-auto -mt-16 flex w-full max-w-sm flex-col px-5 pb-8 pt-2 sm:px-7">
+          <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col px-5 pb-8 pt-8 sm:px-7">
             <Link href="/" className="mb-6 flex justify-center">
               <div className="flex items-center gap-3">
                 <div className="relative flex size-10 items-center justify-center">
@@ -207,9 +166,9 @@ function RegisterContent() {
                   <div className="absolute right-1 top-1 h-6 w-3 skew-x-[20deg] rounded-sm bg-primary/90" />
                 </div>
                 <div className="leading-none">
-                  <p className="text-[1.6rem] font-black tracking-[-0.06em] text-white">Ansell</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.34em] text-white/55">
-                    Opportunity Central
+                  <p className="text-[1.6rem] font-black tracking-[-0.06em] text-white">Anasell</p>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-white/55 whitespace-nowrap">
+                    All Opportunities. One Platform.
                   </p>
                 </div>
               </div>

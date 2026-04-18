@@ -62,6 +62,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 		api.GET("/companies", companyHandler.ListPublicCompanies)
 		api.GET("/companies/:id", companyHandler.GetPublicCompany)
+		api.POST("/companies/:id/view", companyHandler.IncrementView)
 
 		// ── Public Tenders ─────────────────
 		api.GET("/tenders", tenderHandler.ListPublicTenders)

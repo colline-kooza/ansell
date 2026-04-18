@@ -285,7 +285,7 @@ function UserNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
                 <div className="absolute right-0.5 top-0.5 h-4 w-2 skew-x-[20deg] rounded-sm bg-primary/90" />
               </div>
               <div className="leading-none">
-                <p className="text-[14px] font-black tracking-[-0.06em]">Ansell</p>
+                <p className="text-[14px] font-black tracking-[-0.06em]">Anasell</p>
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-gray-400">My Account</p>
               </div>
             </div>
@@ -383,7 +383,7 @@ export default function UserDashboardLayout({ children }: { children: React.Reac
                 <div className="absolute right-0.5 top-0.5 h-4 w-2 skew-x-[20deg] rounded-sm bg-primary/90" />
               </div>
               <div className="leading-none">
-                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Ansell</p>
+                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Anasell</p>
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">My Account</p>
               </div>
             </Link>

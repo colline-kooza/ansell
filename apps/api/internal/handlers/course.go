@@ -211,8 +211,9 @@ type CreateCourseRequest struct {
 	Curriculum   string   `json:"curriculum"`
 	Requirements string   `json:"requirements"`
 	Tags         string   `json:"tags"`
-	ContactEmail string   `json:"contact_email"`
-	ContactPhone string   `json:"contact_phone"`
+	ContactEmail    string `json:"contact_email"`
+	ContactPhone    string `json:"contact_phone"`
+	InstitutionLink string `json:"institution_link"`
 }
 
 // POST /api/admin/courses
@@ -261,8 +262,9 @@ func (h *CourseHandler) Create(c *gin.Context) {
 		Curriculum:   req.Curriculum,
 		Requirements: req.Requirements,
 		Tags:         req.Tags,
-		ContactEmail: req.ContactEmail,
-		ContactPhone: req.ContactPhone,
+		ContactEmail:    req.ContactEmail,
+		ContactPhone:    req.ContactPhone,
+		InstitutionLink: req.InstitutionLink,
 	}
 
 	if req.Mode != "" {

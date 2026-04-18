@@ -36,11 +36,11 @@ function TenderCard({ tender, index }: { tender: Tender; index: number }) {
   const [imgError, setImgError] = useState(false);
   const days = daysUntil(tender.submission_deadline);
   const urgencyClass = urgencyColor(days);
-  const companyName = tender.issuing_organisation || "Ansell";
+  const companyName = tender.issuing_organisation || "Anasell";
   const initial = companyName.charAt(0).toUpperCase();
 
   let logoSrc = tender.company?.logo_url || tender.issuing_organisation_logo;
-  if (!logoSrc && !imgError && companyName !== "Ansell") {
+  if (!logoSrc && !imgError && companyName !== "Anasell") {
     const domain = companyName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() + ".com";
     logoSrc = `https://logo.clearbit.com/${domain}`;
   }

@@ -18,7 +18,6 @@ import {
   MapPin,
   Menu,
   Megaphone,
-  Newspaper,
   Tag,
   TrendingUp,
   Users,
@@ -43,10 +42,6 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  {
-    label: "Trending",
-    href: "/trending",
-  },
   {
     label: "Real Estate",
     href: "/real-estate",
@@ -87,7 +82,7 @@ const NAV_ITEMS: NavItem[] = [
         { label: "All Tenders", href: "/tenders", icon: FileText, description: "Active procurement listings" },
         { label: "Government", href: "/tenders?category=government", icon: Landmark, description: "Public sector tenders" },
         { label: "NGO Tenders", href: "/tenders?category=ngo", icon: Users, description: "Aid & development contracts" },
-        { label: "Trending News", href: "/trending", icon: TrendingUp, description: "News & market updates" },
+        { label: "Courses", href: "/courses", icon: BookOpen, description: "Training & skills development" },
       ],
     },
   },
@@ -99,10 +94,10 @@ const NAV_ITEMS: NavItem[] = [
       description: "Upskill with industry-relevant courses delivered online and in-person.",
       links: [
         { label: "All Courses", href: "/courses", icon: GraduationCap, description: "Browse all available courses" },
-        { label: "Business", href: "/courses?category=business", icon: Briefcase, description: "Management & entrepreneurship" },
-        { label: "Technology", href: "/courses?category=technology", icon: TrendingUp, description: "IT, software & data skills" },
-        { label: "Agriculture", href: "/courses?category=agriculture", icon: Home, description: "Modern farming techniques" },
-        { label: "Teach Here", href: "/courses/instruct", icon: BookOpen, description: "Share your expertise & earn" },
+        { label: "University & College", href: "/courses?category=university_college", icon: Briefcase, description: "Degree & diploma programs" },
+        { label: "Vocational Skills", href: "/courses?category=vocational_skills", icon: TrendingUp, description: "Hands-on practical training" },
+        { label: "Scholarships", href: "/courses?category=scholarships", icon: BookOpen, description: "Funding opportunities" },
+        { label: "Register Company", href: "/become-company", icon: Building2, description: "List your company on Anasell" },
       ],
     },
   },
@@ -111,12 +106,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/video-adverts",
     megaMenu: {
       title: "Video Advertising",
-      description: "Promote your business or product to thousands of Ansell visitors daily.",
+      description: "Promote your business or product to thousands of Anasell visitors daily.",
       links: [
         { label: "Browse Adverts", href: "/video-adverts", icon: Film, description: "Watch featured business videos" },
         { label: "Advertise Here", href: "/video-adverts/submit", icon: Megaphone, description: "Submit your video ad" },
         { label: "Companies", href: "/companies", icon: Building2, description: "Explore verified companies" },
-        { label: "Trending", href: "/trending", icon: Newspaper, description: "Business & industry updates" },
+        { label: "All Tenders", href: "/tenders", icon: FileText, description: "Government & corporate tenders" },
       ],
     },
   },
@@ -131,7 +126,7 @@ const NAV_ITEMS: NavItem[] = [
         { label: "Technology", href: "/companies?sector=technology", icon: TrendingUp, description: "Tech & software companies" },
         { label: "Real Estate", href: "/companies?sector=real_estate", icon: Landmark, description: "Property developers" },
         { label: "NGO & Aid", href: "/companies?sector=ngo", icon: Users, description: "Humanitarian organisations" },
-        { label: "Register Company", href: "/companies/register", icon: Tag, description: "List your company on Ansell" },
+        { label: "Register Company", href: "/become-company", icon: Tag, description: "List your company on Anasell" },
       ],
     },
   },
@@ -185,9 +180,9 @@ export function FrontendNavbar() {
             <div className="absolute right-1 top-1 h-[26px] w-3 skew-x-[20deg] rounded-sm bg-primary/85" />
           </div>
           <div className="leading-none">
-            <p className="text-[1.75rem] font-black tracking-[-0.06em] text-foreground">Ansell</p>
-            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-              Opportunity Central
+            <p className="text-[1.75rem] font-black tracking-[-0.06em] text-foreground">Anasell</p>
+            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.05em] text-muted-foreground whitespace-nowrap">
+              All Opportunities. One Platform.
             </p>
           </div>
         </Link>

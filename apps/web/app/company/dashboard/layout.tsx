@@ -225,7 +225,7 @@ function SidebarBody({ collapsed = false }: { collapsed?: boolean }) {
           </div>
           {!collapsed && (
             <div className="leading-none">
-              <p className="text-[14px] font-black tracking-[-0.05em] text-gray-900">Ansell</p>
+              <p className="text-[14px] font-black tracking-[-0.05em] text-gray-900">Anasell</p>
               <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-primary/70">Company</p>
             </div>
           )}

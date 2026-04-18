@@ -77,8 +77,9 @@ type Course struct {
 	Requirements string `gorm:"type:text" json:"requirements"`
 	Tags         string `gorm:"type:text" json:"tags"`
 
-	ContactEmail string `json:"contact_email"`
-	ContactPhone string `json:"contact_phone"`
+	ContactEmail    string `json:"contact_email"`
+	ContactPhone    string `json:"contact_phone"`
+	InstitutionLink string `gorm:"type:text" json:"institution_link"`
 
 	Views int `gorm:"default:0" json:"views"`
 }

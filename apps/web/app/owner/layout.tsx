@@ -127,7 +127,7 @@ function SidebarBody({ collapsed = false }: { collapsed?: boolean }) {
           </div>
           {!collapsed && (
             <div className="leading-none">
-              <p className="text-[14px] font-black tracking-[-0.05em] text-gray-900">Ansell</p>
+              <p className="text-[14px] font-black tracking-[-0.05em] text-gray-900">Anasell</p>
               <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-primary/70">Property</p>
             </div>
           )}
@@ -279,7 +279,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
                 <div className="absolute right-0.5 top-0.5 h-4 w-2 skew-x-[20deg] rounded-sm bg-primary/90" />
               </div>
               <div className="leading-none">
-                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Ansell</p>
+                <p className="text-[14px] font-black tracking-[-0.06em] text-foreground">Anasell</p>
                 <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">Owner Portal</p>
               </div>
             </Link>

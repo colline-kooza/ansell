@@ -11,7 +11,6 @@ import {
 import Link from "next/link";
 import { usePublicProperty, Property } from "@/hooks/use-properties";
 
-// ─── Utilities ─────────────────────────────────────────────────────────────────
 
 function parseJsonArray(raw: string | undefined): string[] {
   if (!raw) return [];
@@ -27,8 +26,6 @@ const AMENITY_ICONS: Record<string, React.ElementType> = {
   wifi: Wifi, parking: Car, kitchen: Utensils, tv: Tv, airConditioning: Wind,
   washer: WashingMachine, pool: Waves, garden: TreePine, heating: Flame,
 };
-
-// ─── Photo Gallery ─────────────────────────────────────────────────────────────
 
 function PropertyGallery({ images, title }: { images: string[]; title: string }) {
   const [open, setOpen] = useState(false);
@@ -157,7 +154,7 @@ function BookingCard({ property }: { property: Property }) {
         </a>
 
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          <Shield className="mr-1 inline size-3" />Listed on Ansell — verified listing
+          <Shield className="mr-1 inline size-3" />Listed on Anasell — verified listing
         </p>
       </div>
     </div>
@@ -236,7 +233,7 @@ function PropertyDetailContent({ property }: { property: Property }) {
                   <p className="text-sm font-semibold text-foreground">
                     {property.owner ? `${property.owner.first_name} ${property.owner.last_name}` : "Property Owner"}
                   </p>
-                  <p className="text-xs text-muted-foreground">Owner · Verified on Ansell</p>
+                  <p className="text-xs text-muted-foreground">Owner · Verified on Anasell</p>
                 </div>
               </div>
             </div>

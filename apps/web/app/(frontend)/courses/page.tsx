@@ -18,7 +18,7 @@ import { formatDistanceToNow } from "date-fns";
 function CourseCard({ course, index }: { course: Course; index: number }) {
   const [imgError, setImgError] = useState(false);
   const thumbnail = course.thumbnail_url;
-  const providerName = course.instructor_name || "Ansell Academy";
+  const providerName = course.instructor_name || "Anasell Academy";
   const initial = providerName.charAt(0).toUpperCase();
   const colors = ["bg-blue-500", "bg-purple-500", "bg-teal-500", "bg-amber-500", "bg-rose-500", "bg-emerald-500"];
   const logoBg = !thumbnail || imgError ? colors[providerName.length % colors.length] : "bg-white border border-gray-100";

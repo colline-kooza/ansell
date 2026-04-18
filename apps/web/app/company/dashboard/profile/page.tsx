@@ -174,7 +174,7 @@ export default function CompanyProfilePage() {
                   <Label className="text-[11px] text-gray-500 mb-1.5 block">Phone</Label>
                   <div className="relative">
                     <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                    <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="+256 700 000 000" className="h-9 text-[13px] pl-8" />
+                    <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="+211 922 000 000" className="h-9 text-[13px] pl-8" />
                   </div>
                 </div>
                 <div>

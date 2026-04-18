@@ -86,13 +86,13 @@ export default function JobDetailPage({
   if (isLoading) return <PageSkeleton />;
   if (isError || !job) return <NotFound />;
 
-  const companyName = job.company_name || "Ansell";
+  const companyName = job.company_name || "Anasell";
   const initial = companyName.charAt(0).toUpperCase();
   const colors = ["bg-blue-500", "bg-purple-500", "bg-teal-500", "bg-amber-500", "bg-rose-500"];
   const logoBg = colors[companyName.length % colors.length];
 
   let logoSrc = job.company?.logo_url || (job as any).company_logo || (job as any).logo;
-  if (!logoSrc && !logoError && companyName !== "Ansell") {
+  if (!logoSrc && !logoError && companyName !== "Anasell") {
     const domain = companyName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() + ".com";
     logoSrc = `https://logo.clearbit.com/${domain}`;
   }
@@ -412,7 +412,7 @@ export default function JobDetailPage({
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Learn more about this employer and their open positions on Ansell.
+                Learn more about this employer and their open positions on Anasell.
               </p>
             </motion.div>
 
