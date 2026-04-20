@@ -6,6 +6,7 @@ import { buildApiUrl } from "@/lib/api";
 export interface Tender {
   id: string;
   posted_by_id: string;
+  company_id?: string;
   issuing_organisation: string;
   issuing_organisation_logo?: string;
   title: string;

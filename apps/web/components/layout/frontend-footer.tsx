@@ -26,7 +26,6 @@ const footerGroups = [
       { label: "About Anasell", href: "/about-us" },
       { label: "Register Your Company", href: "/become-company" },
       { label: "List a Property", href: "/become-owner" },
-      { label: "ID Verification", href: "/id-verification" },
     ],
   },
   {

@@ -124,10 +124,13 @@ function CompanyCard({ company, index }: { company: Company; index: number }) {
 
         {/* CTA */}
         <div className="flex shrink-0 items-center relative z-20">
-          <span className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary">
+          <Link
+            href={`/companies/${company.slug || company.id}`}
+            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-semibold text-primary-foreground transition hover:brightness-105 active:scale-[0.98] sm:px-3.5 sm:text-[11px]"
+          >
+            View
             <ChevronRight className="size-3.5" />
-            View Profile
-          </span>
+          </Link>
         </div>
       </div>
     </motion.div>

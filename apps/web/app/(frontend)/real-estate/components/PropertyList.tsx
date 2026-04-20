@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, MapPin, Bed, Bath, Eye, Tag, ChevronRight, Clock3 } from "lucide-react";
+import { Heart, MapPin, Bed, Bath, Building2, Eye, Tag, ChevronRight, Clock3 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { Property } from "@/hooks/use-properties";
@@ -73,7 +73,13 @@ export function PropertyListCard({
         transition={{ delay: index * 0.04 }}
         className="group overflow-hidden rounded-[1.1rem] border border-[#e6ecd9] bg-white p-3 shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition-all hover:border-primary/30 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:rounded-2xl sm:border-gray-100 sm:p-0 sm:shadow-none sm:hover:border-primary/40 sm:hover:shadow-lg sm:hover:shadow-gray-100"
       >
-        <div className="flex items-start gap-3 sm:hidden">
+        <div className="sm:hidden">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+              <Building2 className="size-2.5" /> Property
+            </span>
+          </div>
+          <div className="flex items-start gap-3">
           <Link href={propertyHref} className="relative flex size-[78px] shrink-0 overflow-hidden rounded-[1rem] border border-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -166,6 +172,7 @@ export function PropertyListCard({
               </Link>
             </div>
           </div>
+          </div>
         </div>
 
         <div className="hidden sm:flex sm:flex-row sm:items-stretch">
@@ -191,8 +198,9 @@ export function PropertyListCard({
 
           <div className="flex flex-1 flex-col justify-between gap-2 p-4">
             <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Property listing</p>
               <Link href={propertyHref} className="block">
-                <h3 className="line-clamp-1 text-[14px] font-bold text-gray-900 transition-colors hover:text-primary">
+                <h3 className="mt-0.5 line-clamp-1 text-[14px] font-bold text-gray-900 transition-colors hover:text-primary">
                   {property.title}
                 </h3>
               </Link>

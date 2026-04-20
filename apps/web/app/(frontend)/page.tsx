@@ -16,7 +16,6 @@ import {
   Eye,
   FileText,
   GraduationCap,
-  Home,
   MapPin,
   Package,
   Search,
@@ -31,6 +30,7 @@ import { useTenders } from "@/hooks/use-tenders";
 import { useCourses } from "@/hooks/use-courses";
 import { usePublicCompanies } from "@/hooks/use-companies";
 import { PropertyListCard } from "@/app/(frontend)/real-estate/components/PropertyList";
+import { useCallback } from "react";
 
 const SEARCH_CATEGORIES = [
   { label: "Properties", value: "properties", href: "/real-estate" },
@@ -52,34 +52,8 @@ const features = [
 const heroWords = ["real estate.", "job board.", "tenders.", "digital hub."] as const;
 
 const cardShellClass =
-  "group overflow-hidden rounded-[1.1rem] border border-[#e6ecd9] bg-white p-3 shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition-all hover:border-primary/30 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:rounded-2xl sm:border-gray-100 sm:p-0 sm:shadow-none sm:hover:border-primary/40 sm:hover:shadow-lg sm:hover:shadow-gray-100";
+  "group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:border-primary/30 hover:shadow-md";
 
-function SectionHeader({
-  icon: Icon,
-  title,
-  href,
-}: {
-  icon: React.ElementType;
-  title: string;
-  href: string;
-}) {
-  return (
-    <div className="mb-4 flex items-center justify-between sm:mb-5">
-      <div className="flex items-center gap-2.5">
-        <div className="flex size-8 items-center justify-center rounded-xl bg-primary/10 sm:size-9">
-          <Icon className="size-4 text-primary sm:size-4.5" />
-        </div>
-        <h2 className="text-[15px] font-bold text-gray-900 sm:text-base">{title}</h2>
-      </div>
-      <Link
-        href={href}
-        className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-black transition-colors hover:text-black/70 sm:text-[11px]"
-      >
-        View All <ArrowRight className="size-3" />
-      </Link>
-    </div>
-  );
-}
 
 function MetaPill({
   icon: Icon,
@@ -148,7 +122,7 @@ function DesktopSidePanel({
   return (
     <Link
       href={href}
-      className={`relative hidden shrink-0 items-center justify-center overflow-hidden sm:flex sm:w-36 lg:w-40 ${className}`}
+      className={`relative hidden shrink-0 items-center justify-center overflow-hidden sm:flex sm:w-44 lg:w-52 ${className}`}
     >
       {children}
       <span className="absolute left-3 top-3 rounded-full bg-black/75 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
@@ -167,7 +141,7 @@ function JobCard({ job, index }: { job: import("@/hooks/use-jobs").Job; index: n
   const bg = !logo ? colors[(name?.length ?? 1) % colors.length] : "bg-gray-50";
   const pdfUrl = job.pdf_url;
 
-  const handlePdfDownload = async (e: React.MouseEvent) => {
+  const handlePdfDownload = async () => {
     if (!pdfUrl) return;
     const toastId = toast.loading("Preparing PDF...");
     try {
@@ -202,7 +176,12 @@ function JobCard({ job, index }: { job: import("@/hooks/use-jobs").Job; index: n
       className={`${cardShellClass} ${pdfUrl ? "cursor-pointer" : ""}`}
     >
       {/* Mobile */}
-      <div className="sm:hidden pointer-events-none">
+      <div className="sm:hidden pointer-events-none p-3">
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-600">
+            <Briefcase className="size-2.5" /> Job Opening
+          </span>
+        </div>
         <div className="flex items-start gap-3">
           <div className={`flex size-[54px] shrink-0 items-center justify-center overflow-hidden rounded-[1rem] border border-gray-100 shadow-sm ${logo ? "bg-gray-50" : bg}`}>
             {logo ? (
@@ -246,7 +225,7 @@ function JobCard({ job, index }: { job: import("@/hooks/use-jobs").Job; index: n
 
       {/* Desktop */}
       <div className="hidden sm:flex sm:flex-row sm:items-stretch pointer-events-none">
-        <div className="relative hidden shrink-0 items-center justify-center overflow-hidden sm:flex sm:w-36 lg:w-40 bg-gradient-to-br from-slate-100 via-white to-slate-50">
+        <div className="relative hidden shrink-0 items-center justify-center overflow-hidden sm:flex sm:w-44 lg:w-52 bg-gradient-to-br from-slate-100 via-white to-slate-50">
           <div className={`flex size-14 items-center justify-center overflow-hidden rounded-2xl font-bold text-lg text-white shadow-sm ${logo ? "border border-gray-100 bg-gray-50" : bg}`}>
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -282,7 +261,7 @@ function JobCard({ job, index }: { job: import("@/hooks/use-jobs").Job; index: n
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-3.5 py-3.5 lg:min-w-[110px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-3.5 lg:min-w-[140px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           <div className="text-right">
             <p className="text-[12px] font-bold text-gray-900">Apply now</p>
             <p className="text-[10px] text-muted-foreground">New opportunity</p>
@@ -314,7 +293,12 @@ function TenderCard({
       transition={{ delay: index * 0.04 }}
       className={cardShellClass}
     >
-      <div className="sm:hidden">
+      <div className="sm:hidden p-3">
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-600">
+            <FileText className="size-2.5" /> Tender
+          </span>
+        </div>
         <div className="flex items-start gap-3">
           <ThumbFrame href={href} className="bg-gradient-to-br from-blue-100 via-white to-cyan-50">
             <FileText className="size-6 text-blue-600" />
@@ -396,7 +380,7 @@ function TenderCard({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[124px]">
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[140px]">
           <div className="text-right">
             <p className="text-[12px] font-bold text-gray-900">{isPast ? "Closed" : "Open"}</p>
             <p className="text-[10px] text-muted-foreground">Procurement</p>
@@ -429,7 +413,12 @@ function CourseCard({
       transition={{ delay: index * 0.04 }}
       className={cardShellClass}
     >
-      <div className="sm:hidden">
+      <div className="sm:hidden p-3">
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700">
+            <GraduationCap className="size-2.5" /> Course
+          </span>
+        </div>
         <div className="flex items-start gap-3">
           <ThumbFrame href={href} className={course.thumbnail_url && !imgError ? "bg-gray-50" : bg}>
             {course.thumbnail_url && !imgError ? (
@@ -521,7 +510,7 @@ function CourseCard({
           )}
         </div>
 
-        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[124px]">
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[140px]">
           <div className="text-right">
             <p className="text-[12px] font-bold text-gray-900">Learn more</p>
             <p className="text-[10px] text-muted-foreground">Training</p>
@@ -550,7 +539,12 @@ function CompanyCard({
       transition={{ delay: index * 0.04 }}
       className={cardShellClass}
     >
-      <div className="sm:hidden">
+      <div className="sm:hidden p-3">
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
+            <Building2 className="size-2.5" /> Company
+          </span>
+        </div>
         <div className="flex items-start gap-3">
           <ThumbFrame href={href} className="bg-gray-50">
             {company.logo_url ? (
@@ -630,7 +624,7 @@ function CompanyCard({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[124px]">
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[140px]">
           <div className="text-right">
             <p className="text-[12px] font-bold text-gray-900">{company.jobs_count || 0} open jobs</p>
             <p className="text-[10px] text-muted-foreground">Directory</p>
@@ -665,7 +659,7 @@ function CardSkeleton() {
           <div className="h-3.5 w-3/4 rounded-full bg-gray-100" />
           <div className="h-2.5 w-1/2 rounded-full bg-gray-100" />
         </div>
-        <div className="flex flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[124px]">
+        <div className="flex flex-col items-end justify-center gap-2 border-l border-gray-100 px-4 py-4 lg:min-w-[140px]">
           <div className="h-3 w-16 rounded-full bg-gray-100" />
           <div className="h-6 w-14 rounded-full bg-gray-100" />
         </div>
@@ -674,124 +668,167 @@ function CardSkeleton() {
   );
 }
 
-function SectionSkeletons({ count = 4 }: { count?: number }) {
-  return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-      {Array.from({ length: count }).map((_, i) => <CardSkeleton key={i} />)}
-    </div>
-  );
+type FeedItem =
+  | { type: "job"; data: import("@/hooks/use-jobs").Job; idx: number }
+  | { type: "property"; data: import("@/hooks/use-properties").Property; idx: number }
+  | { type: "tender"; data: import("@/hooks/use-tenders").Tender; idx: number }
+  | { type: "course"; data: import("@/hooks/use-courses").Course; idx: number }
+  | { type: "company"; data: import("@/hooks/use-companies").Company; idx: number };
+
+const PAGE_SIZE = 20;
+
+function buildFeed(
+  jobs: import("@/hooks/use-jobs").Job[],
+  properties: import("@/hooks/use-properties").Property[],
+  tenders: import("@/hooks/use-tenders").Tender[],
+  courses: import("@/hooks/use-courses").Course[],
+  companies: import("@/hooks/use-companies").Company[],
+): FeedItem[] {
+  const result: FeedItem[] = [];
+  const maxLen = Math.max(jobs.length, properties.length, tenders.length, courses.length, companies.length);
+  for (let i = 0; i < maxLen; i++) {
+    if (jobs[i]) result.push({ type: "job", data: jobs[i], idx: i });
+    if (properties[i]) result.push({ type: "property", data: properties[i], idx: i });
+    if (tenders[i]) result.push({ type: "tender", data: tenders[i], idx: i });
+    if (courses[i]) result.push({ type: "course", data: courses[i], idx: i });
+    if (companies[i]) result.push({ type: "company", data: companies[i], idx: i });
+  }
+  return result;
 }
 
 function ListingsFeed() {
-  const { data: jobsData, isLoading: jobsLoading } = useJobs({ page_size: 10 });
-  const { data: propertiesData, isLoading: propertiesLoading } = useProperties({ page_size: 8 });
-  const { data: tendersData, isLoading: tendersLoading } = useTenders({ page_size: 10 });
-  const { data: coursesData, isLoading: coursesLoading } = useCourses({ page_size: 10 });
-  const { data: companiesData, isLoading: companiesLoading } = usePublicCompanies({ page_size: 10 });
+  const [page, setPage] = useState(1);
+  const [allItems, setAllItems] = useState<FeedItem[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const jobs = jobsData?.data ?? [];
-  const properties = propertiesData?.data ?? [];
-  const tenders = tendersData?.data ?? [];
-  const courses = coursesData?.data ?? [];
-  const companies = companiesData?.data ?? [];
+  const { data: jobsData, isLoading: jobsLoading } = useJobs({ page, page_size: PAGE_SIZE });
+  const { data: propertiesData, isLoading: propertiesLoading } = useProperties({ page, page_size: PAGE_SIZE });
+  const { data: tendersData, isLoading: tendersLoading } = useTenders({ page, page_size: PAGE_SIZE });
+  const { data: coursesData, isLoading: coursesLoading } = useCourses({ page, page_size: PAGE_SIZE });
+  const { data: companiesData, isLoading: companiesLoading } = usePublicCompanies({ page, page_size: PAGE_SIZE });
 
-  const isAnyLoading = jobsLoading || propertiesLoading || tendersLoading || coursesLoading || companiesLoading;
-  const hasAny = jobs.length + properties.length + tenders.length + courses.length + companies.length > 0;
-  if (!isAnyLoading && !hasAny) return null;
+  const isPageLoading = jobsLoading || propertiesLoading || tendersLoading || coursesLoading || companiesLoading;
+
+  // Append new items whenever a page load completes
+  useEffect(() => {
+    if (isPageLoading) return;
+    const jobs = jobsData?.data ?? [];
+    const properties = propertiesData?.data ?? [];
+    const tenders = tendersData?.data ?? [];
+    const courses = coursesData?.data ?? [];
+    const companies = companiesData?.data ?? [];
+
+    const newItems = buildFeed(jobs, properties, tenders, courses, companies);
+    if (newItems.length === 0) {
+      setHasMore(false);
+      return;
+    }
+
+    setAllItems((prev) => {
+      // Deduplicate by key
+      const existingKeys = new Set(prev.map((i) => `${i.type}-${i.data.id}`));
+      const fresh = newItems.filter((i) => !existingKeys.has(`${i.type}-${i.data.id}`));
+      if (fresh.length === 0) { setHasMore(false); return prev; }
+      return [...prev, ...fresh];
+    });
+
+    const totalJobs = jobsData?.total_items ?? 0;
+    const totalProps = propertiesData?.total_items ?? 0;
+    const totalTenders = tendersData?.total_items ?? 0;
+    const totalCourses = coursesData?.total_items ?? 0;
+    const totalCompanies = companiesData?.total_items ?? 0;
+    const loadedCount = page * PAGE_SIZE;
+    if (
+      loadedCount >= totalJobs &&
+      loadedCount >= totalProps &&
+      loadedCount >= totalTenders &&
+      loadedCount >= totalCourses &&
+      loadedCount >= totalCompanies
+    ) {
+      setHasMore(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPageLoading, page]);
+
+  // Intersection observer for sentinel
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && !isPageLoading && hasMore) {
+        setPage((p) => p + 1);
+      }
+    },
+    [isPageLoading, hasMore]
+  );
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  const isFirstLoad = allItems.length === 0 && isPageLoading;
+
+  if (!isFirstLoad && allItems.length === 0) return null;
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
-      <div className="mb-10 flex flex-col items-center text-center sm:mb-12">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5">
-          <TrendingUp className="size-3.5 text-primary" />
-          <span className="text-[11px] font-bold tracking-widest text-primary" style={{ fontVariant: "all-small-caps" }}>
-            Trending Now
-          </span>
+    <div className="mx-auto max-w-6xl px-3 py-10 sm:px-6 lg:px-8">
+      {/* Left-aligned header */}
+      <div className="mb-7 flex items-end justify-between gap-4">
+        <div>
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1">
+            <TrendingUp className="size-3 text-primary" />
+            <span className="text-[10px] font-bold tracking-widest text-primary uppercase">Trending Now</span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+            What&apos;s on Anasell
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Live listings — jobs, properties, tenders, courses &amp; companies
+          </p>
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-          What&apos;s Trending on Anasell
-        </h2>
-        <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          The latest listings across jobs, properties, tenders, courses, and companies in South Sudan.
-        </p>
+        <Link
+          href="/tenders"
+          className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary/70 sm:flex"
+        >
+          Browse All <ArrowRight className="size-3" />
+        </Link>
       </div>
 
-      <div className="space-y-14 sm:space-y-16">
-        {(jobsLoading || jobs.length > 0) && (
-          <section>
-            <SectionHeader icon={Briefcase} title="Trending Jobs" href="/job-board" />
-            {jobsLoading ? (
-              <SectionSkeletons count={4} />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {jobs.slice(0, 6).map((job, i) => (
-                  <JobCard key={job.id} job={job} index={i} />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
+      {isFirstLoad ? (
+        <div className="flex flex-col gap-2.5">
+          {Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2.5">
+            {allItems.map((item) => {
+              if (item.type === "job") return <JobCard key={`job-${item.data.id}`} job={item.data} index={item.idx} />;
+              if (item.type === "property") return <PropertyListCard key={`prop-${item.data.id}`} property={item.data} index={item.idx} compact />;
+              if (item.type === "tender") return <TenderCard key={`tender-${item.data.id}`} tender={item.data} index={item.idx} />;
+              if (item.type === "course") return <CourseCard key={`course-${item.data.id}`} course={item.data} index={item.idx} />;
+              if (item.type === "company") return <CompanyCard key={`company-${item.data.id}`} company={item.data} index={item.idx} />;
+              return null;
+            })}
+          </div>
 
-        {(propertiesLoading || properties.length > 0) && (
-          <section>
-            <SectionHeader icon={Home} title="Trending Properties" href="/real-estate" />
-            {propertiesLoading ? (
-              <SectionSkeletons count={4} />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {properties.slice(0, 6).map((prop, i) => (
-                  <PropertyListCard key={prop.id} property={prop} index={i} compact />
-                ))}
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="mt-4">
+            {isPageLoading && (
+              <div className="flex flex-col gap-2.5">
+                {Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={`load-${i}`} />)}
               </div>
             )}
-          </section>
-        )}
-
-        {(tendersLoading || tenders.length > 0) && (
-          <section>
-            <SectionHeader icon={FileText} title="Active Tenders" href="/tenders" />
-            {tendersLoading ? (
-              <SectionSkeletons count={4} />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {tenders.slice(0, 6).map((tender, i) => (
-                  <TenderCard key={tender.id} tender={tender} index={i} />
-                ))}
-              </div>
+            {!isPageLoading && !hasMore && allItems.length > 0 && (
+              <p className="py-6 text-center text-[12px] text-muted-foreground">
+                You&apos;ve seen all current listings.
+              </p>
             )}
-          </section>
-        )}
-
-        {(coursesLoading || courses.length > 0) && (
-          <section>
-            <SectionHeader icon={GraduationCap} title="Advertised Courses" href="/courses" />
-            {coursesLoading ? (
-              <SectionSkeletons count={4} />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {courses.slice(0, 6).map((course, i) => (
-                  <CourseCard key={course.id} course={course} index={i} />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {(companiesLoading || companies.length > 0) && (
-          <section>
-            <SectionHeader icon={Building2} title="Featured Companies" href="/companies" />
-            {companiesLoading ? (
-              <SectionSkeletons count={4} />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {companies.slice(0, 6).map((company, i) => (
-                  <CompanyCard key={company.id} company={company} index={i} />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -924,28 +961,6 @@ export default function FrontendHomePage() {
             ))}
           </div>
 
-          <div className="mt-8 flex w-full max-w-sm items-center gap-4 sm:mt-12">
-            <div className="h-px flex-1 bg-border/60" />
-            <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/60 sm:text-[10px]">
-              trusted by businesses across South Sudan
-            </span>
-            <div className="h-px flex-1 bg-border/60" />
-          </div>
-
-          <div className="mt-4 grid w-full max-w-lg grid-cols-3 gap-2 sm:mt-6 sm:gap-4">
-            {[
-              { value: "1,247", label: "Active listings" },
-              { value: "3,892", label: "Registered users" },
-              { value: "23", label: "Live tenders" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-0.5">
-                <span className="text-[1.5rem] font-semibold tracking-[-0.05em] text-foreground sm:text-[1.9rem]">
-                  {stat.value}
-                </span>
-                <span className="text-[10px] leading-4 text-muted-foreground sm:text-[11px]">{stat.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

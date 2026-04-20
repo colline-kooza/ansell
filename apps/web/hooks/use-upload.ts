@@ -2,7 +2,6 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { buildApiUrl } from "@/lib/api";
 
 interface PresignedUrlResponse {
   presignedUrl: string;
@@ -23,17 +22,14 @@ async function getPresignedUrl(
   file: File,
   options: UploadOptions = {},
 ): Promise<PresignedUrlResponse> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("ansell_auth_token") : null;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const response = await fetch(buildApiUrl("upload/presign"), {
+  // Use the Next.js API route — no auth required, R2 credentials are server-side
+  const response = await fetch("/api/upload", {
     method: "POST",
-    headers,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       filename: file.name,
-      content_type: file.type,
-      file_size: file.size,
+      contentType: file.type,
+      size: file.size,
       folder: options.folder,
     }),
   });
@@ -44,16 +40,15 @@ async function getPresignedUrl(
   }
 
   const json = await response.json();
-  const data = json.data;
 
-  if (!data || !data.upload_url || !data.public_url) {
+  if (!json.presignedUrl || !json.publicUrl) {
     throw new Error("Invalid response from upload server");
   }
 
   return {
-    presignedUrl: data.upload_url,
-    publicUrl: data.public_url,
-    key: data.key,
+    presignedUrl: json.presignedUrl,
+    publicUrl: json.publicUrl,
+    key: json.key,
   };
 }
 

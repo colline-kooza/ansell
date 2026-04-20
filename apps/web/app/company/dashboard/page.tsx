@@ -2,15 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { useMyCompany, useCompanyJobs, useCompanyJobApplications } from "@/hooks/use-companies";
+import { useMyCompany, useCompanyJobs } from "@/hooks/use-companies";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Briefcase, Users, Building, PlusCircle, ArrowRight,
+  Briefcase, Building, PlusCircle,
   Eye, TrendingUp, Globe, Phone, Mail, ShieldCheck, MapPin,
-  AlertCircle, ChevronRight, BarChart3, Clock,
+  AlertCircle, ChevronRight, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -26,11 +26,8 @@ export default function CompanyDashboardPage() {
   const { user } = useAuth();
   const { data: company, isLoading: companyLoading } = useMyCompany();
   const { data: jobsData, isLoading: jobsLoading } = useCompanyJobs({ page: 1, page_size: 5 });
-  const { data: appsData, isLoading: appsLoading } = useCompanyJobApplications();
 
   const jobs = jobsData?.data ?? [];
-  const apps = appsData?.data ?? [];
-  const pendingApps = apps.filter(a => a.status === "pending").length;
 
   if (companyLoading) {
     return (
@@ -50,8 +47,6 @@ export default function CompanyDashboardPage() {
 
   const stats = [
     { label: "Active Jobs", value: jobsData?.total_items ?? 0, icon: Briefcase, color: "blue", gradient: "from-blue-50", border: "border-blue-100", textColor: "text-blue-600" },
-    { label: "Total Applications", value: appsData?.total_items ?? 0, icon: Users, color: "emerald", gradient: "from-emerald-50", border: "border-emerald-100", textColor: "text-emerald-600" },
-    { label: "Pending Review", value: pendingApps, icon: AlertCircle, color: "amber", gradient: "from-amber-50", border: "border-amber-100", textColor: "text-amber-600" },
     { label: "Profile Views", value: company.views ?? 0, icon: Eye, color: "purple", gradient: "from-purple-50", border: "border-purple-100", textColor: "text-purple-600" },
   ];
 

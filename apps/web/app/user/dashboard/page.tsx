@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { useUserStore } from "@/stores/user-store";
-import { useMyJobApplications } from "@/hooks/use-job-applications";
 import { usePublicProperties } from "@/hooks/use-properties";
 import { useJobs } from "@/hooks/use-jobs";
 import { useArticles, useArticleCategories } from "@/hooks/use-articles";
@@ -12,25 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Heart, Star, FileText, Newspaper, Building2, Briefcase,
-  MapPin, DollarSign, Clock, Eye, ArrowRight, CheckCircle,
-  XCircle, AlertCircle, TimerIcon, UserCheck, BookOpen, ExternalLink,
-  Trash2, TrendingUp, Calendar,
+  Heart, Star, Newspaper, Building2, Briefcase,
+  Eye, ArrowRight, CheckCircle,
+  ExternalLink, Trash2,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 /* ── Status helpers ─────────────────────────────────────────────────────── */
-
-const APPLICATION_STATUS: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
-  pending:      { label: "Pending",      cls: "bg-amber-50 text-amber-700 border-amber-200",    icon: Clock },
-  reviewing:    { label: "Reviewing",    cls: "bg-blue-50 text-blue-700 border-blue-200",       icon: Eye },
-  shortlisted:  { label: "Shortlisted",  cls: "bg-purple-50 text-purple-700 border-purple-200", icon: UserCheck },
-  interview:    { label: "Interview",    cls: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: Calendar },
-  offer:        { label: "Offer",        cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle },
-  rejected:     { label: "Rejected",     cls: "bg-red-50 text-red-700 border-red-200",          icon: XCircle },
-  withdrawn:    { label: "Withdrawn",    cls: "bg-gray-50 text-gray-600 border-gray-200",       icon: AlertCircle },
-};
 
 const PROPERTY_STATUS: Record<string, { label: string; cls: string }> = {
   active:         { label: "Active",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -181,12 +169,7 @@ export default function UserDashboardPage() {
   const { user } = useAuth();
   const { favoritePropertyIds, favoriteJobIds, toggleFavoriteProperty, toggleFavoriteJob, newsPreferences, toggleNewsPreference } = useUserStore();
 
-  const [viewApp, setViewApp] = useState<string | null>(null);
-
   /* ── Queries ── */
-  const { data: applicationsData, isLoading: appsLoading, error: appsError } = useMyJobApplications({ page_size: 50 });
-  const applications = applicationsData?.data ?? [];
-
   // Fetch properties that are favourited (we query all and filter client-side since most APIs don't support multi-id filter)
   const { data: propertiesData, isLoading: propertiesLoading } = usePublicProperties({ page_size: 100 });
   const allProperties = propertiesData?.data ?? [];
@@ -205,15 +188,6 @@ export default function UserDashboardPage() {
   });
   const newsArticles = newsData?.data ?? [];
 
-  /* ── Application being viewed in modal ── */
-  const viewedApp = applications.find((a) => a.id === viewApp) ?? null;
-
-  /* ── Stats ── */
-  const pendingCount = applications.filter((a) => a.status === "pending" || a.status === "reviewing").length;
-  const offerCount = applications.filter((a) => a.status === "offer").length;
-
-
-
   return (
     <div className="px-4 md:px-6 pt-5 pb-12 max-w-[1400px] mx-auto">
 
@@ -228,108 +202,16 @@ export default function UserDashboardPage() {
       </section>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <StatCard
-          label="Saved Properties"
-          value={favoritePropertyIds.length}
-          sub="favourited listings"
-          color="blue"
-          icon={Heart}
-        />
-        <StatCard
-          label="Saved Jobs"
-          value={favoriteJobIds.length}
-          sub="favourited positions"
-          color="purple"
-          icon={Star}
-        />
-        <StatCard
-          label="Applications"
-          value={applications.length}
-          sub={pendingCount > 0 ? `${pendingCount} in progress` : "All resolved"}
-          color="amber"
-          icon={FileText}
-        />
-        {offerCount > 0 ? (
-          <StatCard
-            label="Job Offers"
-            value={offerCount}
-            sub="offers received"
-            color="emerald"
-            icon={CheckCircle}
-          />
-        ) : (
-          <StatCard
-            label="News Interests"
-            value={newsPreferences.length}
-            sub="selected categories"
-            color="emerald"
-            icon={Newspaper}
-          />
-        )}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+        <StatCard label="Saved Properties" value={favoritePropertyIds.length} sub="favourited listings" color="blue" icon={Heart} />
+        <StatCard label="Saved Jobs" value={favoriteJobIds.length} sub="favourited positions" color="purple" icon={Star} />
+        <StatCard label="News Interests" value={newsPreferences.length} sub="selected categories" color="emerald" icon={Newspaper} />
       </div>
 
       {/* ══════════════════════════════════════════
           OVERVIEW DASHBOARD
       ══════════════════════════════════════════ */}
       <div className="grid lg:grid-cols-2 gap-5">
-
-          {/* Recent applications */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <SectionHeader
-              icon={FileText}
-              title="Recent Applications"
-              sub="Jobs you've applied for"
-              href="/user/dashboard/applications"
-              count={applications.length}
-            />
-            {appsLoading ? (
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
-              </div>
-            ) : appsError || applications.length === 0 ? (
-              <EmptyState
-                icon={Briefcase}
-                text="No applications yet"
-                action={
-                  <Link href="/job-board">
-                    <Button size="sm" variant="outline" className="text-xs gap-1 h-7">
-                      <Briefcase className="h-3 w-3" /> Browse Jobs
-                    </Button>
-                  </Link>
-                }
-              />
-            ) : (
-              <div className="space-y-1.5">
-                {applications.slice(0, 4).map((app) => {
-                  const st = APPLICATION_STATUS[app.status] ?? APPLICATION_STATUS.pending;
-                  const StIcon = st.icon;
-                  return (
-                    <div
-                      key={app.id}
-                      onClick={() => setViewApp(app.id)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-50 hover:border-gray-100 hover:bg-gray-50/50 cursor-pointer transition-all group"
-                    >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/5">
-                        <Briefcase className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-semibold text-gray-900 truncate">
-                          {app.job?.title ?? "Job Application"}
-                        </p>
-                        <p className="text-[10px] text-gray-400 truncate">
-                          {app.job?.company_name} · {format(new Date(app.applied_at), "dd MMM yyyy")}
-                        </p>
-                      </div>
-                      <Badge className={cn("text-[9px] border shrink-0 px-1.5 py-0", st.cls)}>
-                        <StIcon className="h-2.5 w-2.5 mr-0.5 inline" />{st.label}
-                      </Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
 
           {/* Saved properties */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -476,93 +358,6 @@ export default function UserDashboardPage() {
             )}
           </div>
         </div>
-      {/* ── Application detail modal ── */}
-      {viewedApp && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-          onClick={() => setViewApp(null)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl border border-gray-100 bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-50">
-              <div>
-                <h2 className="text-[13px] font-bold text-gray-900">Application Details</h2>
-                <p className="text-[10px] text-gray-400">Submitted {format(new Date(viewedApp.applied_at), "dd MMM yyyy")}</p>
-              </div>
-              <button
-                onClick={() => setViewApp(null)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="px-5 py-4 space-y-3">
-              {/* Status banner */}
-              {(() => {
-                const st = APPLICATION_STATUS[viewedApp.status] ?? APPLICATION_STATUS.pending;
-                const StIcon = st.icon;
-                return (
-                  <div className={cn("flex items-center gap-2.5 rounded-xl border px-3 py-2.5", st.cls)}>
-                    <StIcon className="h-4 w-4 shrink-0" />
-                    <div>
-                      <p className="text-[12px] font-bold">{st.label}</p>
-                      <p className="text-[10px] opacity-75">Current application status</p>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Details rows */}
-              {[
-                { label: "Position", value: viewedApp.job?.title ?? "—" },
-                { label: "Company", value: viewedApp.job?.company_name ?? "—" },
-                { label: "Location", value: viewedApp.job?.city ?? "—" },
-                { label: "Job Type", value: viewedApp.job?.job_type ?? "—" },
-                { label: "Your Name", value: viewedApp.full_name },
-                { label: "Your Email", value: viewedApp.email },
-                { label: "Updated", value: format(new Date(viewedApp.updated_at), "dd MMM yyyy, HH:mm") },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-start text-[12px]">
-                  <span className="text-gray-400 shrink-0">{label}</span>
-                  <span className="font-medium text-gray-900 text-right max-w-[55%] truncate">{value}</span>
-                </div>
-              ))}
-
-              {viewedApp.cover_letter && (
-                <div>
-                  <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide font-semibold">Cover Letter</p>
-                  <p className="text-[11px] text-gray-600 leading-relaxed line-clamp-3">{viewedApp.cover_letter}</p>
-                </div>
-              )}
-
-              {viewedApp.notes && (
-                <div>
-                  <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide font-semibold">Reviewer Notes</p>
-                  <p className="text-[11px] text-gray-600 leading-relaxed">{viewedApp.notes}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="px-5 pb-5 flex gap-2">
-              {viewedApp.job?.id && (
-                <Link href={`/job-board/${viewedApp.job.id}`} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full h-8 text-xs gap-1">
-                    <ExternalLink className="h-3 w-3" /> View Job
-                  </Button>
-                </Link>
-              )}
-              <Button size="sm" onClick={() => setViewApp(null)} className="flex-1 h-8 text-xs">
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <style dangerouslySetInnerHTML={{ __html: `.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}` }} />
     </div>
   );

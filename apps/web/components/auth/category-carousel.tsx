@@ -5,52 +5,40 @@ import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
   {
-    title: "Career Development",
-    desc: "Browse thousands of job openings from verified companies across South Sudan.",
+    title: "Find Your Next Career",
+    desc: "Thousands of verified job openings across South Sudan — from NGOs and government to tech startups. Search by industry, location, or salary range and connect directly with top employers hiring today.",
     emoji: "💼",
-    color: "from-emerald-600/30 to-emerald-800/20",
+    tag: "Job Board",
   },
   {
-    title: "Prime Estates",
-    desc: "Discover residential and commercial properties in prime South Sudan locations.",
+    title: "Discover Prime Properties",
+    desc: "Browse apartments, land, commercial spaces, and more across Juba and beyond. Every listing is verified and directly linked to a registered owner. Find your perfect space and connect in minutes.",
     emoji: "🏠",
-    color: "from-blue-600/30 to-blue-800/20",
+    tag: "Real Estate",
   },
   {
-    title: "Government Tenders",
-    desc: "Access exclusive tender opportunities and submit competitive bids.",
+    title: "Access Public Tenders",
+    desc: "Stay ahead of government and NGO procurement opportunities. Anasell aggregates tenders from official sources so your business never misses a bid. Browse active tenders and reach issuers directly.",
     emoji: "📋",
-    color: "from-amber-600/30 to-amber-800/20",
+    tag: "Tenders",
   },
   {
-    title: "Courses & Training",
-    desc: "Upskill with accredited courses from leading institutions nationwide.",
+    title: "Upskill with Top Courses",
+    desc: "Explore accredited training programs from leading South Sudanese institutions. From vocational skills to university diplomas, find the course that elevates your career and connects you to employers.",
     emoji: "🎓",
-    color: "from-purple-600/30 to-purple-800/20",
+    tag: "Courses & Training",
   },
   {
-    title: "Business Directory",
-    desc: "Connect with verified companies and grow your professional network.",
+    title: "Grow Your Business Reach",
+    desc: "List your company on South Sudan's most visited business directory. Get discovered by thousands of buyers, partners, and job seekers every day. Verified badges build trust and drive real enquiries.",
     emoji: "🏢",
-    color: "from-rose-600/30 to-rose-800/20",
+    tag: "Company Directory",
   },
   {
-    title: "Video Adverts",
-    desc: "Reach your audience with targeted video advertising campaigns.",
+    title: "Advertise with Impact",
+    desc: "Reach the right audience with video ads that play directly on the Anasell platform. Showcase your brand to thousands of active South Sudanese users daily — at a fraction of traditional media costs.",
     emoji: "🎬",
-    color: "from-cyan-600/30 to-cyan-800/20",
-  },
-  {
-    title: "National ID Services",
-    desc: "Apply for and track your South Sudan national identification documents.",
-    emoji: "🪪",
-    color: "from-orange-600/30 to-orange-800/20",
-  },
-  {
-    title: "Supplier Network",
-    desc: "Register as a supplier and access government procurement opportunities.",
-    emoji: "🔗",
-    color: "from-teal-600/30 to-teal-800/20",
+    tag: "Video Advertising",
   },
 ];
 
@@ -62,7 +50,7 @@ export function CategoryCarousel() {
     if (paused) return;
     const id = setInterval(() => {
       setCurrent((prev) => (prev + 1) % CATEGORIES.length);
-    }, 3200);
+    }, 4000);
     return () => clearInterval(id);
   }, [paused]);
 
@@ -74,36 +62,32 @@ export function CategoryCarousel() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Card */}
       <div
         key={current}
-        className={cn(
-          "relative overflow-hidden  p-7",
-          // cat.color
-        )}
-        style={{ animation: "fadeSlideIn 0.5s ease forwards" }}
+        className="relative overflow-hidden p-7"
+        style={{ animation: "fadeSlideIn 0.45s ease forwards" }}
       >
         <style>{`
           @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateX(28px); }
+            from { opacity: 0; transform: translateX(24px); }
             to   { opacity: 1; transform: translateX(0); }
           }
         `}</style>
 
-        {/* Big emoji */}
-        {/* <div className="mb-4 text-5xl">{cat.emoji}</div> */}
+        <span className="mb-4 inline-block rounded-full bg-[#10210f]/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#10210f]/70">
+          {cat.tag}
+        </span>
 
-        <h3 className="text-[2rem] font-semibold leading-tight tracking-tight text-[#10210f]">
+        <h3 className="mt-2 text-[2rem] font-bold leading-tight tracking-tight text-[#10210f]">
           {cat.title}
         </h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-[#10210f]/68">
+        <p className="mt-3 text-[14px] leading-[1.75] text-[#10210f]/65">
           {cat.desc}
         </p>
-{/*  */}
       </div>
 
       {/* Dot indicators */}
-      <div className="mt-4 ml-3 flex items-center justify-center gap-1.5">
+      <div className="mt-4 ml-7 flex items-center gap-1.5">
         {CATEGORIES.map((_, i) => (
           <button
             key={i}

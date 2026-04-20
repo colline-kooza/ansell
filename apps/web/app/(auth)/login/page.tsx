@@ -200,10 +200,10 @@ function LoginContent() {
               <h2 className="text-3xl font-semibold leading-tight tracking-[-0.05em] text-white sm:text-[1.8rem]">
                 Welcome back.
                 <br />
-                Access your workspace.
+                Your opportunities await.
               </h2>
               <p className="mt-4 text-xs leading-6 text-white/60">
-                Sign in with your email and password to continue.
+                Sign in to access jobs, properties, tenders, and more.
               </p>
             </div>
 
@@ -271,6 +271,24 @@ function LoginContent() {
                 Create one
               </Link>
             </p>
+
+            <div className="mt-5 border-t border-white/10 pt-5 flex flex-col gap-2">
+              <p className="text-center text-[10px] font-semibold uppercase tracking-widest text-white/30 mb-1">
+                Register your business
+              </p>
+              <Link
+                href="/become-owner"
+                className="flex items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 py-2.5 text-xs font-medium text-white/60 transition hover:bg-white/10 hover:text-white"
+              >
+                List a Property — Become an Owner
+              </Link>
+              <Link
+                href="/become-company"
+                className="flex items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 py-2.5 text-xs font-medium text-white/60 transition hover:bg-white/10 hover:text-white"
+              >
+                Register Your Company
+              </Link>
+            </div>
           </div>
         </div>
       </div>

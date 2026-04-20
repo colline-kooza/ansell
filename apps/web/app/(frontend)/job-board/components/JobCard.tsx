@@ -9,7 +9,7 @@ import {
   Clock,
   Zap,
   Eye,
-  ExternalLink,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { formatDistanceToNow } from "date-fns";
@@ -180,10 +180,10 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
           <Link
             href={`/job-board/${job.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[10px] font-semibold text-primary-foreground transition hover:brightness-105 active:scale-[0.98] sm:px-3.5 sm:text-[11px]"
           >
-            <ExternalLink className="size-3" />
-            <span>View Details</span>
+            View
+            <ChevronRight className="size-3.5" />
           </Link>
         </div>
       </div>
