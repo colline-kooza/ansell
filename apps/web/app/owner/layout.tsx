@@ -250,7 +250,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
     if (!isEligible) {
       // Try refresh once
       refreshUser().then(() => {
-        // Next render cycle will handle the result
+    
       });
     }
   }, [user, isLoading, isEligible, router, pathname, refreshUser]);
