@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const MAIL_FROM = process.env.MAIL_FROM ?? "ANASELL <info@desishub.com>";
 
 function generateOtp(email: string, window: number): string {
@@ -15,6 +14,13 @@ function generateOtp(email: string, window: number): string {
 
 export async function POST(request: Request) {
   try {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.error("Missing RESEND_API_KEY environment variable");
+      return Response.json({ success: false, message: "Email service is not configured" }, { status: 500 });
+    }
+
+    const resend = new Resend(resendApiKey);
     const { email } = await request.json();
     if (!email || typeof email !== "string") {
       return Response.json({ success: false, message: "Email is required" }, { status: 400 });
