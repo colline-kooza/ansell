@@ -254,6 +254,7 @@ type SupplierApplicationRequest struct {
 
 // CreateTenderRequest is the payload for creating a tender
 type CreateTenderRequest struct {
+	CompanyID               string     `json:"company_id"`
 	IssuingOrganisation     string     `json:"issuing_organisation" binding:"required"`
 	IssuingOrganisationLogo string     `json:"issuing_organisation_logo"`
 	Title                   string     `json:"title" binding:"required"`
@@ -280,6 +281,7 @@ type CreateTenderRequest struct {
 
 // UpdateTenderRequest is the payload for updating a tender
 type UpdateTenderRequest struct {
+	CompanyID               string     `json:"company_id"`
 	IssuingOrganisation     string     `json:"issuing_organisation"`
 	IssuingOrganisationLogo string     `json:"issuing_organisation_logo"`
 	Title                   string     `json:"title"`

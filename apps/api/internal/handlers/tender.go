@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"ansell-backend-api/internal/models"
@@ -19,6 +20,58 @@ type TenderHandler struct {
 
 func NewTenderHandler(db *gorm.DB) *TenderHandler {
 	return &TenderHandler{db: db}
+}
+
+func (h *TenderHandler) resolveTenderCompanyID(userID uuid.UUID, requestedCompanyID string, issuingOrganisation string) (*uuid.UUID, bool, error) {
+	if requestedCompanyID != "" {
+		parsed, err := uuid.Parse(requestedCompanyID)
+		if err != nil {
+			return nil, false, err
+		}
+		var company models.Company
+		if err := h.db.First(&company, "id = ?", parsed).Error; err != nil {
+			return nil, false, err
+		}
+		return &company.ID, true, nil
+	}
+
+	trimmedOrg := strings.TrimSpace(issuingOrganisation)
+	if trimmedOrg != "" {
+		var company models.Company
+		if err := h.db.Where("LOWER(company_name) = LOWER(?)", trimmedOrg).First(&company).Error; err == nil {
+			return &company.ID, true, nil
+		} else if err != gorm.ErrRecordNotFound {
+			return nil, false, err
+		}
+	}
+
+	var company models.Company
+	if err := h.db.Where("owner_id = ?", userID).Order("created_at asc").First(&company).Error; err == nil {
+		return &company.ID, true, nil
+	} else if err != gorm.ErrRecordNotFound {
+		return nil, false, err
+	}
+
+	return nil, false, nil
+}
+
+func (h *TenderHandler) attachDerivedCompany(tender *models.Tender) error {
+	if tender == nil || tender.Company != nil {
+		return nil
+	}
+
+	if cid, resolved, err := h.resolveTenderCompanyID(tender.PostedByID, "", tender.IssuingOrganisation); err != nil {
+		return err
+	} else if resolved && cid != nil {
+		var company models.Company
+		if err := h.db.First(&company, "id = ?", *cid).Error; err != nil {
+			return err
+		}
+		tender.CompanyID = cid
+		tender.Company = &company
+	}
+
+	return nil
 }
 
 // ----------------------------------------------------------------------------
@@ -83,6 +136,16 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 		return
 	}
 
+	for i := range tenders {
+		if err := h.attachDerivedCompany(&tenders[i]); err != nil {
+			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+				Success: false,
+				Message: "Failed to fetch tenders",
+			})
+			return
+		}
+	}
+
 	totalPages := int(total) / pageSize
 	if int(total)%pageSize != 0 {
 		totalPages++
@@ -107,6 +170,14 @@ func (h *TenderHandler) GetPublicTender(c *gin.Context) {
 		c.JSON(http.StatusNotFound, types.ErrorResponse{
 			Success: false,
 			Message: "Tender not found",
+		})
+		return
+	}
+
+	if err := h.attachDerivedCompany(&tender); err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Success: false,
+			Message: "Failed to fetch tender",
 		})
 		return
 	}
@@ -394,8 +465,18 @@ func (h *TenderHandler) CreateTender(c *gin.Context) {
 		status = req.Status
 	}
 
+	companyID, resolvedCompany, err := h.resolveTenderCompanyID(adminID, req.CompanyID, req.IssuingOrganisation)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Success: false,
+			Message: "Invalid company selected for this tender",
+		})
+		return
+	}
+
 	tender := models.Tender{
 		PostedByID:              adminID,
+		CompanyID:               companyID,
 		IssuingOrganisation:     req.IssuingOrganisation,
 		IssuingOrganisationLogo: req.IssuingOrganisationLogo,
 		Title:                   req.Title,
@@ -419,6 +500,13 @@ func (h *TenderHandler) CreateTender(c *gin.Context) {
 		IsFeatured:              req.IsFeatured,
 		Status:                  status,
 		IsActive:                true,
+	}
+
+	if resolvedCompany && tender.IssuingOrganisationLogo == "" {
+		var company models.Company
+		if err := h.db.First(&company, "id = ?", *companyID).Error; err == nil && company.LogoURL != "" {
+			tender.IssuingOrganisationLogo = company.LogoURL
+		}
 	}
 
 	if err := h.db.Create(&tender).Error; err != nil {
@@ -457,28 +545,96 @@ func (h *TenderHandler) UpdateTender(c *gin.Context) {
 		return
 	}
 
-	if req.IssuingOrganisation != "" { tender.IssuingOrganisation = req.IssuingOrganisation }
-	if req.IssuingOrganisationLogo != "" { tender.IssuingOrganisationLogo = req.IssuingOrganisationLogo }
-	if req.Title != "" { tender.Title = req.Title }
-	if req.ReferenceNumber != "" { tender.ReferenceNumber = req.ReferenceNumber }
-	if req.Description != "" { tender.Description = req.Description }
-	if req.Category != "" { tender.Category = req.Category }
-	if req.TenderType != "" { tender.TenderType = req.TenderType }
-	if req.ValueEstimate != nil { tender.ValueEstimate = req.ValueEstimate }
-	if req.ValueCurrency != "" { tender.ValueCurrency = req.ValueCurrency }
-	if req.City != "" { tender.City = req.City }
-	if req.Location != "" { tender.Location = req.Location }
-	if req.EligibilityCriteria != "" { tender.EligibilityCriteria = req.EligibilityCriteria }
-	if req.RequiredDocuments != "" { tender.RequiredDocuments = req.RequiredDocuments }
-	if req.SubmissionDeadline != nil { tender.SubmissionDeadline = req.SubmissionDeadline }
-	if req.TenderOpenDate != nil { tender.TenderOpenDate = req.TenderOpenDate }
-	if req.BidOpeningDate != nil { tender.BidOpeningDate = req.BidOpeningDate }
-	if req.ContactPerson != "" { tender.ContactPerson = req.ContactPerson }
-	if req.ContactEmail != "" { tender.ContactEmail = req.ContactEmail }
-	if req.ContactPhone != "" { tender.ContactPhone = req.ContactPhone }
-	if req.AttachmentURL != "" { tender.AttachmentURL = req.AttachmentURL }
-	if req.IsFeatured != nil { tender.IsFeatured = *req.IsFeatured }
-	if req.Status != "" { tender.Status = req.Status }
+	effectiveOrganisation := tender.IssuingOrganisation
+	if req.IssuingOrganisation != "" {
+		effectiveOrganisation = req.IssuingOrganisation
+	}
+	companyID, resolvedCompany, err := h.resolveTenderCompanyID(tender.PostedByID, req.CompanyID, effectiveOrganisation)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Success: false,
+			Message: "Invalid company selected for this tender",
+		})
+		return
+	}
+
+	if req.IssuingOrganisation != "" {
+		tender.IssuingOrganisation = req.IssuingOrganisation
+	}
+	if req.IssuingOrganisationLogo != "" {
+		tender.IssuingOrganisationLogo = req.IssuingOrganisationLogo
+	}
+	if req.Title != "" {
+		tender.Title = req.Title
+	}
+	if req.ReferenceNumber != "" {
+		tender.ReferenceNumber = req.ReferenceNumber
+	}
+	if req.Description != "" {
+		tender.Description = req.Description
+	}
+	if req.Category != "" {
+		tender.Category = req.Category
+	}
+	if req.TenderType != "" {
+		tender.TenderType = req.TenderType
+	}
+	if req.ValueEstimate != nil {
+		tender.ValueEstimate = req.ValueEstimate
+	}
+	if req.ValueCurrency != "" {
+		tender.ValueCurrency = req.ValueCurrency
+	}
+	if req.City != "" {
+		tender.City = req.City
+	}
+	if req.Location != "" {
+		tender.Location = req.Location
+	}
+	if req.EligibilityCriteria != "" {
+		tender.EligibilityCriteria = req.EligibilityCriteria
+	}
+	if req.RequiredDocuments != "" {
+		tender.RequiredDocuments = req.RequiredDocuments
+	}
+	if req.SubmissionDeadline != nil {
+		tender.SubmissionDeadline = req.SubmissionDeadline
+	}
+	if req.TenderOpenDate != nil {
+		tender.TenderOpenDate = req.TenderOpenDate
+	}
+	if req.BidOpeningDate != nil {
+		tender.BidOpeningDate = req.BidOpeningDate
+	}
+	if req.ContactPerson != "" {
+		tender.ContactPerson = req.ContactPerson
+	}
+	if req.ContactEmail != "" {
+		tender.ContactEmail = req.ContactEmail
+	}
+	if req.ContactPhone != "" {
+		tender.ContactPhone = req.ContactPhone
+	}
+	if req.AttachmentURL != "" {
+		tender.AttachmentURL = req.AttachmentURL
+	}
+	if req.IsFeatured != nil {
+		tender.IsFeatured = *req.IsFeatured
+	}
+	if req.Status != "" {
+		tender.Status = req.Status
+	}
+	if resolvedCompany {
+		tender.CompanyID = companyID
+		if tender.IssuingOrganisationLogo == "" && companyID != nil {
+			var company models.Company
+			if err := h.db.First(&company, "id = ?", *companyID).Error; err == nil && company.LogoURL != "" {
+				tender.IssuingOrganisationLogo = company.LogoURL
+			}
+		}
+	} else if req.CompanyID != "" || req.IssuingOrganisation != "" {
+		tender.CompanyID = nil
+	}
 
 	if err := h.db.Save(&tender).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
