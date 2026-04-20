@@ -97,7 +97,8 @@ function RegistrationForm({
         body: JSON.stringify({ email: formData.email }),
       });
       if (!otpRes.ok) {
-        toast.error("Account created but could not send verification email. Please contact support.");
+        const otpData = await otpRes.json().catch(() => null);
+        toast.error(otpData?.message || "Account created but could not send verification email. Please contact support.");
       }
 
       onSuccess(formData.email, result.data.token, result.data.user);
@@ -276,11 +277,16 @@ function OtpVerification({
   async function handleResend() {
     setIsResending(true);
     try {
-      await fetch("/api/auth/send-otp", {
+      const resendResponse = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const resendData = await resendResponse.json().catch(() => null);
+      if (!resendResponse.ok) {
+        toast.error(resendData?.message || "Could not resend. Please try again.");
+        return;
+      }
       toast.success("New code sent to your email.");
     } catch {
       toast.error("Could not resend. Please try again.");

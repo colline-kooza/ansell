@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
       console.error("Missing RESEND_API_KEY environment variable");
-      return Response.json({ success: false, message: "Email service is not configured" }, { status: 500 });
+      return Response.json({ success: false, message: "Email service is not configured. Missing RESEND_API_KEY." }, { status: 500 });
     }
 
     const resend = new Resend(resendApiKey);
@@ -109,12 +109,17 @@ export async function POST(request: Request) {
 
     if (result.error) {
       console.error("Resend error:", result.error);
-      return Response.json({ success: false, message: "Failed to send verification email" }, { status: 500 });
+      const resendMessage =
+        typeof result.error.message === "string" && result.error.message.trim().length > 0
+          ? result.error.message
+          : "Failed to send verification email";
+      return Response.json({ success: false, message: resendMessage }, { status: 500 });
     }
 
     return Response.json({ success: true });
   } catch (err) {
     console.error("send-otp error:", err);
-    return Response.json({ success: false, message: "Failed to send verification email" }, { status: 500 });
+    const message = err instanceof Error && err.message ? err.message : "Failed to send verification email";
+    return Response.json({ success: false, message }, { status: 500 });
   }
 }
