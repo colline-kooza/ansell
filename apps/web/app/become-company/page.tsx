@@ -354,7 +354,6 @@ export default function BecomeCompanyPage() {
     setSubmitting(true);
     setAiState("loading");
     try {
-      // Register account if not logged in
       if (!user) {
         const regRes = await fetch(buildApiUrl("auth/register"), {
           method: "POST",
