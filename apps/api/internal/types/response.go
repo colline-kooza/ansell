@@ -274,6 +274,7 @@ type CreateTenderRequest struct {
 	ContactPerson           string     `json:"contact_person"`
 	ContactEmail            string     `json:"contact_email"`
 	ContactPhone            string     `json:"contact_phone"`
+	WebLink                 string     `json:"weblink"`
 	AttachmentURL           string     `json:"attachment_url"`
 	IsFeatured              bool       `json:"is_featured"`
 	Status                  string     `json:"status"`
@@ -301,6 +302,7 @@ type UpdateTenderRequest struct {
 	ContactPerson           string     `json:"contact_person"`
 	ContactEmail            string     `json:"contact_email"`
 	ContactPhone            string     `json:"contact_phone"`
+	WebLink                 string     `json:"weblink"`
 	AttachmentURL           string     `json:"attachment_url"`
 	IsFeatured              *bool      `json:"is_featured"`
 	Status                  string     `json:"status"`

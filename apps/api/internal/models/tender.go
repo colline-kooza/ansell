@@ -38,6 +38,7 @@ type Tender struct {
 	ContactPerson           string     `json:"contact_person"`
 	ContactEmail            string     `json:"contact_email"`
 	ContactPhone            string     `json:"contact_phone"`
+	WebLink                 string     `json:"weblink"`
 	AttachmentURL           string     `json:"attachment_url"`
 	IsFeatured              bool       `gorm:"default:false" json:"is_featured"`
 	IsActive                bool       `gorm:"default:true" json:"is_active"`

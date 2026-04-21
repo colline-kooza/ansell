@@ -26,12 +26,14 @@ type Company struct {
 	City          string `json:"city"`
 	Description   string `gorm:"type:text" json:"description"`
 	LogoURL       string `json:"logo_url"`
+	CoverImageURL string `json:"cover_image_url"`
 	EmployeeCount string `json:"employee_count"`
+	FoundedYear   *int   `json:"founded_year,omitempty"`
 
-	IsVerified bool `gorm:"default:false" json:"is_verified"`
-	IsActive   bool `gorm:"default:true" json:"is_active"`
+	IsVerified bool   `gorm:"default:false" json:"is_verified"`
+	IsActive   bool   `gorm:"default:true" json:"is_active"`
 	Slug       string `gorm:"uniqueIndex" json:"slug"`
-	Views      int  `gorm:"default:0" json:"views"`
+	Views      int    `gorm:"default:0" json:"views"`
 }
 
 func (c *Company) BeforeCreate(tx *gorm.DB) error {

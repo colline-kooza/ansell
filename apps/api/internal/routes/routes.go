@@ -179,6 +179,10 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			companyOwner.POST("/jobs", jobHandler.CreateOwnerJob)
 			companyOwner.PUT("/jobs/:id", jobHandler.UpdateOwnerJob)
 			companyOwner.DELETE("/jobs/:id", jobHandler.DeleteOwnerJob)
+			companyOwner.GET("/tenders", tenderHandler.ListOwnerTenders)
+			companyOwner.POST("/tenders", tenderHandler.CreateOwnerTender)
+			companyOwner.PUT("/tenders/:id", tenderHandler.UpdateOwnerTender)
+			companyOwner.DELETE("/tenders/:id", tenderHandler.DeleteOwnerTender)
 			companyOwner.GET("/applications", jobHandler.ListOwnerApplications)
 			companyOwner.PATCH("/applications/:id/status", jobHandler.UpdateApplicationStatus)
 		}

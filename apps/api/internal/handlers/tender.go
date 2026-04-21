@@ -55,6 +55,14 @@ func (h *TenderHandler) resolveTenderCompanyID(userID uuid.UUID, requestedCompan
 	return nil, false, nil
 }
 
+func (h *TenderHandler) getOwnerCompany(userID uuid.UUID) (*models.Company, error) {
+	var company models.Company
+	if err := h.db.Where("owner_id = ?", userID).Order("created_at asc").First(&company).Error; err != nil {
+		return nil, err
+	}
+	return &company, nil
+}
+
 func (h *TenderHandler) attachDerivedCompany(tender *models.Tender) error {
 	if tender == nil || tender.Company != nil {
 		return nil
@@ -83,6 +91,7 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 	category := c.Query("category")
 	tenderType := c.Query("tender_type")
 	city := c.Query("city")
+	companyID := c.Query("company_id")
 	status := c.DefaultQuery("status", "active")
 	isFeatured := c.Query("is_featured")
 	closingSoon := c.Query("closing_soon")
@@ -109,6 +118,9 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 	}
 	if city != "" {
 		query = query.Where("city = ?", city)
+	}
+	if companyID != "" {
+		query = query.Where("company_id = ?", companyID)
 	}
 	if isFeatured == "true" {
 		query = query.Where("is_featured = ?", true)
@@ -160,6 +172,267 @@ func (h *TenderHandler) ListPublicTenders(c *gin.Context) {
 		TotalItems: total,
 		TotalPages: totalPages,
 	})
+}
+
+// GET /api/company-owner/tenders
+func (h *TenderHandler) ListOwnerTenders(c *gin.Context) {
+	userIDStr, _ := c.Get("user_id")
+	userID, _ := uuid.Parse(userIDStr.(string))
+
+	company, err := h.getOwnerCompany(userID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "No company associated with this account"})
+		return
+	}
+
+	status := c.Query("status")
+	search := c.Query("search")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
+
+	query := h.db.Model(&models.Tender{}).Where("company_id = ?", company.ID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	if search != "" {
+		query = query.Where("title ILIKE ? OR reference_number ILIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+
+	var total int64
+	query.Count(&total)
+
+	var tenders []models.Tender
+	if err := query.Order("created_at desc").Offset(offset).Limit(pageSize).Find(&tenders).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to fetch tenders"})
+		return
+	}
+
+	totalPages := int(total) / pageSize
+	if int(total)%pageSize != 0 {
+		totalPages++
+	}
+
+	c.JSON(http.StatusOK, types.PaginatedResponse{
+		Success:    true,
+		Data:       tenders,
+		Page:       page,
+		PageSize:   pageSize,
+		TotalItems: total,
+		TotalPages: totalPages,
+	})
+}
+
+// POST /api/company-owner/tenders
+func (h *TenderHandler) CreateOwnerTender(c *gin.Context) {
+	userIDStr, _ := c.Get("user_id")
+	userID, _ := uuid.Parse(userIDStr.(string))
+
+	company, err := h.getOwnerCompany(userID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "No company associated with this account"})
+		return
+	}
+
+	var req types.CreateTenderRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Success: false, Message: "Validation failed", Error: err.Error()})
+		return
+	}
+
+	status := "pending_review"
+	if req.Status == "draft" || req.Status == "pending_review" {
+		status = req.Status
+	}
+
+	issuingOrganisation := req.IssuingOrganisation
+	if strings.TrimSpace(issuingOrganisation) == "" {
+		issuingOrganisation = company.CompanyName
+	}
+
+	issuingLogo := req.IssuingOrganisationLogo
+	if issuingLogo == "" {
+		issuingLogo = company.LogoURL
+	}
+
+	tender := models.Tender{
+		PostedByID:              userID,
+		CompanyID:               &company.ID,
+		IssuingOrganisation:     issuingOrganisation,
+		IssuingOrganisationLogo: issuingLogo,
+		Title:                   req.Title,
+		ReferenceNumber:         req.ReferenceNumber,
+		Description:             req.Description,
+		Category:                req.Category,
+		TenderType:              req.TenderType,
+		ValueEstimate:           req.ValueEstimate,
+		ValueCurrency:           req.ValueCurrency,
+		City:                    req.City,
+		Location:                req.Location,
+		EligibilityCriteria:     req.EligibilityCriteria,
+		RequiredDocuments:       req.RequiredDocuments,
+		SubmissionDeadline:      req.SubmissionDeadline,
+		TenderOpenDate:          req.TenderOpenDate,
+		BidOpeningDate:          req.BidOpeningDate,
+		ContactPerson:           req.ContactPerson,
+		ContactEmail:            req.ContactEmail,
+		ContactPhone:            req.ContactPhone,
+		WebLink:                 req.WebLink,
+		AttachmentURL:           req.AttachmentURL,
+		Status:                  status,
+		IsActive:                true,
+	}
+
+	if err := h.db.Create(&tender).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to create tender"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, types.SuccessResponse{Success: true, Message: "Tender created", Data: tender})
+}
+
+// PUT /api/company-owner/tenders/:id
+func (h *TenderHandler) UpdateOwnerTender(c *gin.Context) {
+	userIDStr, _ := c.Get("user_id")
+	userID, _ := uuid.Parse(userIDStr.(string))
+
+	company, err := h.getOwnerCompany(userID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "Unauthorized"})
+		return
+	}
+
+	id := c.Param("id")
+	var tender models.Tender
+	if err := h.db.First(&tender, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, types.ErrorResponse{Success: false, Message: "Tender not found"})
+		return
+	}
+
+	if tender.CompanyID == nil || *tender.CompanyID != company.ID {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "Unauthorized"})
+		return
+	}
+
+	var req types.UpdateTenderRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Success: false, Message: "Invalid request", Error: err.Error()})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if req.IssuingOrganisation != "" {
+		updates["issuing_organisation"] = req.IssuingOrganisation
+	}
+	if req.IssuingOrganisationLogo != "" {
+		updates["issuing_organisation_logo"] = req.IssuingOrganisationLogo
+	}
+	if req.Title != "" {
+		updates["title"] = req.Title
+	}
+	if req.ReferenceNumber != "" {
+		updates["reference_number"] = req.ReferenceNumber
+	}
+	if req.Description != "" {
+		updates["description"] = req.Description
+	}
+	if req.Category != "" {
+		updates["category"] = req.Category
+	}
+	if req.TenderType != "" {
+		updates["tender_type"] = req.TenderType
+	}
+	if req.ValueEstimate != nil {
+		updates["value_estimate"] = req.ValueEstimate
+	}
+	if req.ValueCurrency != "" {
+		updates["value_currency"] = req.ValueCurrency
+	}
+	if req.City != "" {
+		updates["city"] = req.City
+	}
+	if req.Location != "" {
+		updates["location"] = req.Location
+	}
+	if req.EligibilityCriteria != "" {
+		updates["eligibility_criteria"] = req.EligibilityCriteria
+	}
+	if req.RequiredDocuments != "" {
+		updates["required_documents"] = req.RequiredDocuments
+	}
+	if req.SubmissionDeadline != nil {
+		updates["submission_deadline"] = req.SubmissionDeadline
+	}
+	if req.TenderOpenDate != nil {
+		updates["tender_open_date"] = req.TenderOpenDate
+	}
+	if req.BidOpeningDate != nil {
+		updates["bid_opening_date"] = req.BidOpeningDate
+	}
+	if req.ContactPerson != "" {
+		updates["contact_person"] = req.ContactPerson
+	}
+	if req.ContactEmail != "" {
+		updates["contact_email"] = req.ContactEmail
+	}
+	if req.ContactPhone != "" {
+		updates["contact_phone"] = req.ContactPhone
+	}
+	if req.WebLink != "" {
+		updates["web_link"] = req.WebLink
+	}
+	if req.AttachmentURL != "" {
+		updates["attachment_url"] = req.AttachmentURL
+	}
+	if req.Status == "draft" || req.Status == "pending_review" {
+		updates["status"] = req.Status
+	}
+
+	if err := h.db.Model(&tender).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to update tender"})
+		return
+	}
+
+	if err := h.db.First(&tender, "id = ?", tender.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to load updated tender"})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "Tender updated", Data: tender})
+}
+
+// DELETE /api/company-owner/tenders/:id
+func (h *TenderHandler) DeleteOwnerTender(c *gin.Context) {
+	userIDStr, _ := c.Get("user_id")
+	userID, _ := uuid.Parse(userIDStr.(string))
+
+	company, err := h.getOwnerCompany(userID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "Unauthorized"})
+		return
+	}
+
+	id := c.Param("id")
+	var tender models.Tender
+	if err := h.db.First(&tender, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, types.ErrorResponse{Success: false, Message: "Tender not found"})
+		return
+	}
+
+	if tender.CompanyID == nil || *tender.CompanyID != company.ID {
+		c.JSON(http.StatusForbidden, types.ErrorResponse{Success: false, Message: "Unauthorized"})
+		return
+	}
+
+	if err := h.db.Delete(&tender).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Success: false, Message: "Failed to delete tender"})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{Success: true, Message: "Tender deleted"})
 }
 
 // GET /api/tenders/:id
@@ -496,6 +769,7 @@ func (h *TenderHandler) CreateTender(c *gin.Context) {
 		ContactPerson:           req.ContactPerson,
 		ContactEmail:            req.ContactEmail,
 		ContactPhone:            req.ContactPhone,
+		WebLink:                 req.WebLink,
 		AttachmentURL:           req.AttachmentURL,
 		IsFeatured:              req.IsFeatured,
 		Status:                  status,
@@ -614,6 +888,9 @@ func (h *TenderHandler) UpdateTender(c *gin.Context) {
 	}
 	if req.ContactPhone != "" {
 		tender.ContactPhone = req.ContactPhone
+	}
+	if req.WebLink != "" {
+		tender.WebLink = req.WebLink
 	}
 	if req.AttachmentURL != "" {
 		tender.AttachmentURL = req.AttachmentURL

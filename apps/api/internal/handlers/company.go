@@ -391,18 +391,59 @@ func (h *CompanyHandler) UpdateOwnerCompany(c *gin.Context) {
 		return
 	}
 
-	// Filter out fields that cannot be updated
-	delete(req, "id")
-	delete(req, "owner_id")
-	delete(req, "is_verified")
-	delete(req, "created_at")
-	delete(req, "updated_at")
-	delete(req, "deleted_at")
+	updates := map[string]interface{}{}
 
-	if err := h.db.Model(&company).Updates(req).Error; err != nil {
+	for _, field := range []string{
+		"company_name",
+		"company_type",
+		"industry",
+		"email",
+		"website",
+		"address",
+		"city",
+		"description",
+		"logo_url",
+		"cover_image_url",
+		"founded_year",
+	} {
+		if value, exists := req[field]; exists {
+			updates[field] = value
+		}
+	}
+
+	if value, exists := req["phone_number"]; exists {
+		updates["phone_number"] = value
+	} else if value, exists := req["phone"]; exists {
+		updates["phone_number"] = value
+	}
+
+	if value, exists := req["employee_count"]; exists {
+		updates["employee_count"] = value
+	} else if value, exists := req["size"]; exists {
+		updates["employee_count"] = value
+	}
+
+	if len(updates) == 0 {
+		c.JSON(http.StatusOK, types.SuccessResponse{
+			Success: true,
+			Message: "Company updated",
+			Data:    company,
+		})
+		return
+	}
+
+	if err := h.db.Model(&company).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
 			Success: false,
 			Message: "Failed to update company",
+		})
+		return
+	}
+
+	if err := h.db.First(&company, "id = ?", company.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Success: false,
+			Message: "Failed to load updated company",
 		})
 		return
 	}
@@ -465,12 +506,12 @@ func (h *CompanyHandler) ListPublicCompanies(c *gin.Context) {
 // GET /api/companies/:id_or_slug
 func (h *CompanyHandler) GetPublicCompany(c *gin.Context) {
 	param := c.Param("id")
-	
+
 	id, err := uuid.Parse(param)
-	
+
 	var company models.Company
 	var queryErr error
-	
+
 	if err == nil {
 		// Valid UUID, try fetching by ID
 		queryErr = h.db.Where("id = ? AND is_active = ?", id, true).First(&company).Error
