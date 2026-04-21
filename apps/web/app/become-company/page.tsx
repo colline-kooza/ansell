@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useSubmitCompanyApplication } from "@/hooks/use-companies";
 import { MultiImageUpload } from "@/components/shared/multi-image-upload";
@@ -250,9 +251,9 @@ function AIAnalysisDialog({
 export default function BecomeCompanyPage() {
   const { user, login } = useAuth();
   const submitMutation = useSubmitCompanyApplication();
+  const router = useRouter();
 
   const [step, setStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [logoImages, setLogoImages] = useState<string[]>([]);
   const [coverImages, setCoverImages] = useState<string[]>([]);
@@ -290,6 +291,32 @@ export default function BecomeCompanyPage() {
     ? `${creds.first_name} ${creds.last_name}`.trim()
     : "—";
 
+  const [validatingEmail, setValidatingEmail] = useState(false);
+
+  async function verifyEmailDomain(email: string): Promise<string | null> {
+    const domain = email.split("@")[1]?.toLowerCase();
+    if (!domain) return "Invalid email format.";
+    const disposable = [
+      "mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","yopmail.com",
+      "sharklasers.com","guerrillamailblock.com","throwam.com","maildrop.cc","trashmail.com",
+      "fakeinbox.com","dispostable.com","spamgourmet.com","mytemp.email","temp-mail.org",
+      "example.com","test.com","sample.com","fake.com","invalid.com",
+    ];
+    if (disposable.includes(domain)) return "Disposable or example email addresses are not allowed.";
+    try {
+      const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`);
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.Answer || data.Answer.length === 0) {
+          return `The email domain "${domain}" does not appear to be a valid mail domain.`;
+        }
+      }
+    } catch {
+      // network issue — don't block
+    }
+    return null;
+  }
+
   const validateStep = (): boolean => {
     if (step === 1) {
       if (!form.company_name.trim()) { toast.error("Company name is required"); return false; }
@@ -307,7 +334,9 @@ export default function BecomeCompanyPage() {
       if (!form.city.trim()) { toast.error("City is required"); return false; }
       if (!form.address.trim()) { toast.error("Address is required"); return false; }
       if (!form.phone.trim()) { toast.error("Phone number is required"); return false; }
-      if (!form.email.trim() && !effectiveEmail) { toast.error("Email is required"); return false; }
+      const emailToCheck = form.email.trim() || effectiveEmail;
+      if (!emailToCheck) { toast.error("Company email is required"); return false; }
+      if (!isValidEmail(emailToCheck)) { toast.error("Enter a valid company email address"); return false; }
     }
     if (step === 4) {
       if (logoImages.length === 0) { toast.error("Please upload a company logo"); return false; }
@@ -318,8 +347,24 @@ export default function BecomeCompanyPage() {
     return true;
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (!validateStep()) return;
+    // Async email domain check on step 1 (login email) and step 3 (company email)
+    if (step === 1 && !user && creds.email) {
+      setValidatingEmail(true);
+      const emailErr = await verifyEmailDomain(creds.email);
+      setValidatingEmail(false);
+      if (emailErr) { toast.error(emailErr); return; }
+    }
+    if (step === 3) {
+      const emailToCheck = form.email.trim() || effectiveEmail;
+      if (emailToCheck) {
+        setValidatingEmail(true);
+        const emailErr = await verifyEmailDomain(emailToCheck);
+        setValidatingEmail(false);
+        if (emailErr) { toast.error(emailErr); return; }
+      }
+    }
     setStep((s) => Math.min(6, s + 1));
   };
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
@@ -339,7 +384,9 @@ export default function BecomeCompanyPage() {
       document_url: docImages[0] || undefined,
       employee_count: form.size || "1-10",
     } as any);
-    setSubmitted(true);
+    localStorage.setItem("ansell_pending_company_application", "true");
+    toast.success("Application submitted! Our team will review it within 1–3 business days.");
+    router.push("/");
   };
 
   const handleSubmit = async () => {
@@ -420,49 +467,6 @@ export default function BecomeCompanyPage() {
       setSubmitting(false);
     }
   };
-
-  if (submitted) {
-    return (
-      <>
-        <FrontendNavbar />
-        <div className="min-h-screen bg-[#080d08] flex items-center justify-center px-5 pt-20 [font-family:var(--font-poppins)]">
-          <div className="max-w-md w-full text-center">
-            <div className="mb-6 flex justify-center">
-              <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center animate-in zoom-in duration-500">
-                <CheckCircle2 className="h-12 w-12 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Application Submitted!</h1>
-            <p className="text-white/60 text-[13px] leading-6 mb-4">
-              Your company registration application has been received. Our team will review it
-              within 1–3 business days and notify you of the decision.
-            </p>
-            <p className="text-white/50 text-[12px] leading-relaxed mb-8">
-              {user
-                ? "Once approved, you'll gain full access to your company portal and can start posting jobs and tenders."
-                : `Once approved, log in with ${effectiveEmail || creds.email} and access your company dashboard immediately — no extra verification needed.`}
-            </p>
-            <div className="space-y-3">
-              <Link
-                href="/"
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-primary px-5 py-3.5 text-[14px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 transition-all"
-              >
-                <Home className="h-4 w-4" />
-                Back to Storefront
-              </Link>
-              <Link
-                href="/login"
-                className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/20 px-5 py-3.5 text-[14px] font-medium text-white/70 hover:text-white hover:border-white/40 hover:bg-white/5 active:scale-95 transition-all"
-              >
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </div>
-        <FrontendFooter />
-      </>
-    );
-  }
 
   const reviewRows = [
     { label: "Contact Person", value: contactName },
@@ -906,10 +910,14 @@ export default function BecomeCompanyPage() {
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary text-[13px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 shadow-sm shadow-primary/20 transition-all"
+                      disabled={validatingEmail}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary text-[13px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 shadow-sm shadow-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Continue
-                      <ArrowRight className="h-4 w-4" />
+                      {validatingEmail ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" />Verifying email…</>
+                      ) : (
+                        <>Continue <ArrowRight className="h-4 w-4" /></>
+                      )}
                     </button>
                   ) : (
                     <button

@@ -32,6 +32,25 @@ const isDocument = (url: string) => {
   );
 };
 
+const isLocalPreview = (url: string) =>
+  url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("document-icon:");
+
+async function resolvePreviewUrl(url: string) {
+  if (!url || isDocument(url) || isLocalPreview(url)) {
+    return url;
+  }
+
+  try {
+    const response = await fetch(`/api/upload/signed?url=${encodeURIComponent(url)}`);
+    if (!response.ok) return url;
+
+    const json = await response.json();
+    return typeof json.url === "string" && json.url ? json.url : url;
+  } catch {
+    return url;
+  }
+}
+
 export function MultiImageUpload({
   value = [],
   onChange,
@@ -48,7 +67,20 @@ export function MultiImageUpload({
 
   // Sync internal previews with prop value
   useEffect(() => {
-    setPreviews(value);
+    let cancelled = false;
+
+    const syncPreviews = async () => {
+      const resolved = await Promise.all(value.map((item) => resolvePreviewUrl(item)));
+      if (!cancelled) {
+        setPreviews(resolved);
+      }
+    };
+
+    syncPreviews();
+
+    return () => {
+      cancelled = true;
+    };
   }, [value]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

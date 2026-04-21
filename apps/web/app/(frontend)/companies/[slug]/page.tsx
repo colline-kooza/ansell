@@ -21,6 +21,7 @@ import {
   Zap,
   Tag,
   Clock,
+  Eye,
   Search,
   AlertCircle
 } from "lucide-react";
@@ -99,9 +100,9 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ slug: 
 
   // Fetch Tenders related to this company
   const { data: tendersData, isLoading: tendersLoading } = useTenders({
-    issuing_organisation: company?.company_name,
+    company_id: company?.id,
     page_size: 5,
-    enabled: !!company?.company_name,
+    enabled: !!company?.id,
   });
 
   if (isLoading) return <CompanyPageSkeleton />;
@@ -327,6 +328,9 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ slug: 
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-red-500">
                               <Calendar className="size-3.5" /> Closes: {tender.submission_deadline ? new Date(tender.submission_deadline).toLocaleDateString() : 'N/A'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye className="size-3.5" /> {(tender.views ?? 0).toLocaleString()} views
                             </span>
                           </div>
                         </div>

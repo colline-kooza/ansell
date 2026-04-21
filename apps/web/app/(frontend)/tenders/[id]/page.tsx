@@ -140,7 +140,7 @@ export default function TenderDetailPage({ params }: { params: Promise<{ id: str
                 ) : (
                   <span className="font-medium text-foreground">{companyName}</span>
                 )}
-                {tender.reference_number && <span className="ml-1.5 text-xs text-muted-foreground">· {tender.reference_number}</span>}
+                {tender.reference_number && <span className="ml-1.5 text-xs text-muted-foreground">- {tender.reference_number}</span>}
               </p>
 
               <div className="mt-3.5 flex flex-wrap gap-2 text-[12px]">
@@ -227,10 +227,20 @@ export default function TenderDetailPage({ params }: { params: Promise<{ id: str
                 This tender is advertised on Anasell. To apply or express interest, contact the issuing organisation directly using the contact details provided, or visit their official website.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
+                {tender.weblink && (
+                  <a
+                    href={tender.weblink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-[12px] font-semibold text-primary-foreground transition hover:brightness-105"
+                  >
+                    <ExternalLink className="size-3.5" />Open Tender Link
+                  </a>
+                )}
                 {tender.contact_email && (
                   <a
                     href={`mailto:${tender.contact_email}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-[12px] font-semibold text-primary-foreground transition hover:brightness-105"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-4 py-2 text-[12px] font-semibold text-foreground transition hover:bg-muted"
                   >
                     <Mail className="size-3.5" />Email the Issuer
                   </a>
@@ -284,6 +294,12 @@ export default function TenderDetailPage({ params }: { params: Promise<{ id: str
                   <a href={`tel:${tender.contact_phone}`} className="mb-2 flex items-center gap-2 text-[13px] text-primary hover:underline">
                     <Phone className="size-3.5 shrink-0" />
                     {tender.contact_phone}
+                  </a>
+                )}
+                {tender.weblink && (
+                  <a href={tender.weblink} target="_blank" rel="noopener noreferrer" className="mb-2 flex items-center gap-2 text-[13px] text-primary hover:underline">
+                    <Globe className="size-3.5 shrink-0" />
+                    <span className="truncate">Official tender link</span>
                   </a>
                 )}
 

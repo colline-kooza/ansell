@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -38,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${poppins.variable} antialiased`}>
+      <body className="antialiased">
         <AuthProvider>
           <QueryProvider>{children}</QueryProvider>
           <Toaster position="top-center" richColors />

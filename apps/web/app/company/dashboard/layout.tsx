@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Building, Briefcase, Users, BarChart3, Settings,
   ChevronDown, Home, LogOut, ShieldCheck, PanelLeft, Menu, Search,
   Bell, ChevronRight, PlusCircle, Globe, FileText, UserPlus,
-  Building2,
+  Building2, Clock, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -39,8 +39,14 @@ const SECTIONS: SectionDef[] = [
     title: "Recruitment",
     items: [
       { label: "Job Listings", href: "/company/dashboard/jobs", icon: Briefcase },
-      { label: "Applicants", href: "/company/dashboard/applications", icon: Users },
       { label: "Post New Job", href: "/company/dashboard/jobs?new=1", icon: PlusCircle },
+    ],
+  },
+  {
+    title: "Procurement",
+    items: [
+      { label: "Tenders", href: "/company/dashboard/tenders", icon: FileText },
+      { label: "Create Tender", href: "/company/dashboard/tenders?new=1", icon: PlusCircle },
     ],
   },
   {
@@ -289,6 +295,7 @@ function SidebarBody({ collapsed = false }: { collapsed?: boolean }) {
 /* ── Navbar ─────────────────────────────────────────────────────── */
 function DashboardNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -331,6 +338,21 @@ function DashboardNavbar({ onToggleCollapse }: { onToggleCollapse: () => void })
           <Search className="absolute left-2.5 h-3.5 w-3.5 text-gray-400" />
           <input type="text" placeholder="Global search..." className="h-8 w-48 rounded-lg border-none bg-gray-50 pl-8 text-[11px] focus:ring-1 focus:ring-primary/20" />
         </div>
+
+        {/* Role badge */}
+        <span className="hidden sm:inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 uppercase tracking-wider shrink-0">
+          {user?.role?.replace(/_/g, " ") || "Company"}
+        </span>
+
+        {/* Home button */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors shrink-0"
+        >
+          <Home className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
         <button className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-white" />
@@ -340,9 +362,75 @@ function DashboardNavbar({ onToggleCollapse }: { onToggleCollapse: () => void })
   );
 }
 
+/* ── Pending Application Screen ─────────────────────────────────── */
+function PendingApplicationScreen({ name }: { name?: string }) {
+  const { logout } = useAuth();
+  const router = useRouter();
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-lg w-full text-center">
+        <div className="mb-6 flex justify-center">
+          <div className="h-20 w-20 rounded-full bg-amber-100 flex items-center justify-center">
+            <Clock className="h-10 w-10 text-amber-600" />
+          </div>
+        </div>
+        <div className="text-center mb-6">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-600">Application Status</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Application Under Review</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-2">
+            Hi{name ? ` ${name}` : ""}! Your company registration application has been received and is being reviewed.
+          </p>
+          <p className="text-gray-400 text-xs leading-relaxed">
+            This usually takes <strong className="text-gray-600">1-3 business days</strong>. Company access stays locked until an admin approves your application.
+          </p>
+        </div>
+        <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-left">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-900">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            Application Status
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">Current state</span>
+              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">Awaiting admin approval</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">Access</span>
+              <span className="text-right font-medium text-gray-800">Company features unlock only after approval</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">What to do now</span>
+              <span className="text-right font-medium text-gray-800">Please wait for review and check back later</span>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:brightness-110 transition-all"
+          >
+            <Home className="h-4 w-4" /> Back to Storefront
+          </Link>
+          <button
+            onClick={() => { logout(); router.replace("/login"); }}
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-200 px-5 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+          >
+            <LogOut className="h-4 w-4" /> Sign Out
+          </button>
+        </div>
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+          Application submitted - awaiting admin approval
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Layout ────────────────────────────────────────────────── */
 export default function CompanyDashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [hasPendingApp, setHasPendingApp] = useState(false);
   const { user, isLoading, refreshUser } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -357,17 +445,17 @@ export default function CompanyDashboardLayout({ children }: { children: React.R
       return;
     }
     if (!isEligible) {
-      refreshUser().then(updatedUser => {
-        const ur = updatedUser?.role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
-        if (!(ur === "company" || ur === "companyowner" || ur.includes("admin"))) {
-          toast.error("Access Denied: You do not have company owner permissions.");
-          if (ur === "owner" || ur === "propertyowner") {
-            router.replace("/owner/dashboard");
-          } else {
-            router.replace("/user/dashboard");
-          }
+      const flag = localStorage.getItem("ansell_pending_company_application");
+      setHasPendingApp(!!flag);
+      refreshUser().then((updated) => {
+        const ur = updated?.role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
+        if (ur === "company" || ur === "companyowner") {
+          localStorage.removeItem("ansell_pending_company_application");
+          setHasPendingApp(false);
         }
       });
+    } else {
+      localStorage.removeItem("ansell_pending_company_application");
     }
   }, [user, isLoading, isEligible, router, pathname, refreshUser]);
 
@@ -382,7 +470,9 @@ export default function CompanyDashboardLayout({ children }: { children: React.R
     );
   }
 
-  if (!user || !isEligible) return null;
+  if (!user) return null;
+  if (!isEligible && hasPendingApp) return <PendingApplicationScreen name={user.first_name} />;
+  if (!isEligible) return null;
 
   return (
     <div className="flex min-h-screen bg-[#FDFEFE]">

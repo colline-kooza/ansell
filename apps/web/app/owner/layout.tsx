@@ -7,7 +7,7 @@ import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Building2, MessageSquare, Home, LogOut, Settings,
-  ChevronRight, PanelLeft, Menu, Bell, Search,
+  ChevronRight, PanelLeft, Menu, Bell, Search, Clock, CheckCircle2,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -181,6 +181,7 @@ function SidebarBody({ collapsed = false }: { collapsed?: boolean }) {
 
 function OwnerNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 0);
@@ -222,6 +223,21 @@ function OwnerNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
           <Search className="absolute left-3 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
           <input type="text" placeholder="Search..." className="h-9 w-[200px] rounded-xl bg-gray-50 pl-9 pr-4 text-[13px] outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
         </div>
+
+        {/* Role badge */}
+        <span className="hidden sm:inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700 uppercase tracking-wider shrink-0">
+          {user?.role?.replace(/_/g, " ") || "Property Owner"}
+        </span>
+
+        {/* Home button */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors shrink-0"
+        >
+          <Home className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
         <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 transition-colors">
           <Bell className="h-4 w-4" />
         </button>
@@ -231,8 +247,73 @@ function OwnerNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
   );
 }
 
+function PendingApplicationScreen({ name }: { name?: string }) {
+  const { logout } = useAuth();
+  const router = useRouter();
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-lg w-full">
+        <div className="mb-6 flex justify-center">
+          <div className="h-20 w-20 rounded-full bg-amber-100 flex items-center justify-center">
+            <Clock className="h-10 w-10 text-amber-600" />
+          </div>
+        </div>
+        <div className="text-center mb-6">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-600">Application Status</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Application Under Review</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-2">
+            Hi{name ? ` ${name}` : ""}! Your property owner application has been received and is being reviewed by our team.
+          </p>
+          <p className="text-gray-400 text-xs leading-relaxed">
+            This usually takes <strong className="text-gray-600">1-3 business days</strong>. Owner access stays locked until an admin approves your application.
+          </p>
+        </div>
+        <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-900">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            Application Status
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">Current state</span>
+              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">Awaiting admin approval</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">Access</span>
+              <span className="text-right font-medium text-gray-800">Owner features unlock only after approval</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-gray-500">What to do now</span>
+              <span className="text-right font-medium text-gray-800">Please wait for review and check back later</span>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:brightness-110 transition-all"
+          >
+            <Home className="h-4 w-4" /> Back to Home
+          </Link>
+          <button
+            onClick={() => { logout(); router.replace("/login"); }}
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-200 px-5 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+          >
+            <LogOut className="h-4 w-4" /> Sign Out
+          </button>
+        </div>
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-4 py-2.5">
+          <Clock className="h-3.5 w-3.5 shrink-0" />
+          Application submitted - awaiting admin approval
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [hasPendingApp, setHasPendingApp] = useState(false);
   const pathname = usePathname();
   const { user, isLoading, refreshUser } = useAuth();
   const router = useRouter();
@@ -246,27 +327,37 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
-    
     if (!isEligible) {
-      // Try refresh once
-      refreshUser().then(() => {
-    
+      const flag = localStorage.getItem("ansell_pending_owner_application");
+      setHasPendingApp(!!flag);
+      // Still try to refresh in case role was just updated
+      refreshUser().then((updated) => {
+        const ur = updated?.role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
+        if (ur === "owner" || ur === "propertyowner") {
+          localStorage.removeItem("ansell_pending_owner_application");
+          setHasPendingApp(false);
+        }
       });
+    } else {
+      // Eligible — clear any stale pending flag
+      localStorage.removeItem("ansell_pending_owner_application");
     }
   }, [user, isLoading, isEligible, router, pathname, refreshUser]);
 
-  if (isLoading || (!isEligible && !user)) {
+  if (isLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-gray-500 animate-pulse">Verifying ownership...</p>
+          <p className="text-sm text-gray-500 animate-pulse">Verifying access...</p>
         </div>
       </div>
     );
   }
 
-  if (!user || !isEligible) return null;
+  if (!user) return null;
+  if (!isEligible && hasPendingApp) return <PendingApplicationScreen name={user.first_name} />;
+  if (!isEligible) return null;
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

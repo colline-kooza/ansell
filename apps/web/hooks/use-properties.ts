@@ -352,12 +352,13 @@ const json = await res.json();
     },
     onMutate: async (id: string) => {
       await qc.cancelQueries({ queryKey: ["admin"] });
-      const updateData = (old: any) => {
+      const removeItem = (old: any) => {
         if (!old || !old.data) return old;
-        return { ...old, data: old.data.map((p: any) => p.id === id ? { ...p, status: "active" } : p) };
+        const filtered = old.data.filter((p: any) => p.id !== id);
+        return { ...old, data: filtered, total_items: Math.max(0, (old.total_items || 1) - 1) };
       };
-      qc.setQueriesData({ queryKey: ["admin", "properties"] }, updateData);
-      qc.setQueriesData({ queryKey: ["admin", "properties-full"] }, updateData);
+      qc.setQueriesData({ queryKey: ["admin", "properties"] }, removeItem);
+      qc.setQueriesData({ queryKey: ["admin", "properties-full"] }, removeItem);
     },
     onSuccess: () => toast.success("Property approved and set to active"),
     onError: (e: Error) => {
@@ -396,12 +397,13 @@ const json = await res.json();
     },
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ["admin"] });
-      const updateData = (old: any) => {
+      const removeItem = (old: any) => {
         if (!old || !old.data) return old;
-        return { ...old, data: old.data.map((p: any) => p.id === id ? { ...p, status: "rejected" } : p) };
+        const filtered = old.data.filter((p: any) => p.id !== id);
+        return { ...old, data: filtered, total_items: Math.max(0, (old.total_items || 1) - 1) };
       };
-      qc.setQueriesData({ queryKey: ["admin", "properties"] }, updateData);
-      qc.setQueriesData({ queryKey: ["admin", "properties-full"] }, updateData);
+      qc.setQueriesData({ queryKey: ["admin", "properties"] }, removeItem);
+      qc.setQueriesData({ queryKey: ["admin", "properties-full"] }, removeItem);
     },
     onSuccess: () => toast.success("Property rejected"),
     onError: (e: Error) => {

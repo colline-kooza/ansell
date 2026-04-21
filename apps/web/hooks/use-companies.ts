@@ -38,18 +38,26 @@ export interface Company {
 export interface CompanyApplication {
   id: string;
   company_name: string;
+  company_type?: string;
   industry?: string;
   description?: string;
   city?: string;
+  address?: string;
   phone?: string;
+  phone_number?: string;
   email?: string;
   website?: string;
   logo_url?: string;
   document_url?: string;
+  employee_count?: string;
   status: string;
+  review_note?: string;
   reviewer_note?: string;
   user_id: string;
+  user?: { id: string; first_name: string; last_name: string; email: string };
   applicant?: { id: string; first_name: string; last_name: string; email: string };
+  reviewed_by?: string;
+  reviewed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +83,28 @@ function getAuthHeaders(): Record<string, string> {
   return token
     ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
     : { "Content-Type": "application/json" };
+}
+
+function normalizeCompanyApplication(app: any): CompanyApplication {
+  return {
+    ...app,
+    applicant: app.applicant ?? app.user,
+    phone: app.phone ?? app.phone_number,
+    reviewer_note: app.reviewer_note ?? app.review_note,
+  };
+}
+
+function normalizeCompany(company: any): Company {
+  if (!company) return company;
+  return {
+    ...company,
+    phone_number: company.phone_number ?? company.phone ?? "",
+    phone: company.phone ?? company.phone_number ?? "",
+    employee_count: company.employee_count ?? company.size ?? "",
+    size: company.size ?? company.employee_count ?? "",
+    founded_year: company.founded_year ?? "",
+    cover_image_url: company.cover_image_url ?? "",
+  };
 }
 
 // ── Admin queries ─────────────────────────────────────────────────────
@@ -109,7 +139,13 @@ export function useAdminCompanyApplications(options: UseCompaniesOptions = {}) {
       const res = await fetch(`${buildApiUrl("admin/company-applications")}?${params}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error("Failed to fetch company applications");
       const json = await res.json();
-      return { data: json.data ?? [], total_items: json.total_items ?? 0, total_pages: json.total_pages ?? 1, page: json.page ?? 1, page_size: json.page_size ?? 20 };
+      return {
+        data: (json.data ?? []).map(normalizeCompanyApplication),
+        total_items: json.total_items ?? 0,
+        total_pages: json.total_pages ?? 1,
+        page: json.page ?? 1,
+        page_size: json.page_size ?? 20,
+      };
     },
   });
 }
@@ -123,7 +159,7 @@ export function useMyCompany() {
       const res = await fetch(buildApiUrl("company-owner/company"), { headers: getAuthHeaders() });
       if (!res.ok) return null;
       const json = await res.json();
-      return json.data ?? null;
+      return json.data ? normalizeCompany(json.data) : null;
     },
   });
 }
@@ -261,13 +297,14 @@ export function useAdminApproveCompanyApplication() {
   throw new Error(errMsg);
 }
 const json = await res.json();
-      return json.data;
+      return normalizeCompanyApplication(json.data);
     },
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ["admin", "company-applications"] });
       qc.setQueriesData({ queryKey: ["admin", "company-applications"] }, (old: any) => {
         if (!old?.data) return old;
-        return { ...old, data: old.data.map((a: CompanyApplication) => a.id === id ? { ...a, status: "approved" } : a) };
+        const filtered = old.data.filter((a: CompanyApplication) => a.id !== id);
+        return { ...old, data: filtered, total_items: Math.max(0, (old.total_items || 1) - 1) };
       });
     },
     onSuccess: () => toast.success("Company application approved"),
@@ -281,7 +318,7 @@ export function useAdminRejectCompanyApplication() {
   return useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason?: string }): Promise<CompanyApplication> => {
       const res = await fetch(buildApiUrl(`admin/company-applications/${id}/reject`), {
-        method: "PATCH", headers: getAuthHeaders(), body: JSON.stringify({ reason }),
+        method: "PATCH", headers: getAuthHeaders(), body: JSON.stringify({ review_note: reason }),
       });
       if (!res.ok) {
   const text = await res.text();
@@ -294,13 +331,14 @@ export function useAdminRejectCompanyApplication() {
   throw new Error(errMsg);
 }
 const json = await res.json();
-      return json.data;
+      return normalizeCompanyApplication(json.data);
     },
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ["admin", "company-applications"] });
       qc.setQueriesData({ queryKey: ["admin", "company-applications"] }, (old: any) => {
         if (!old?.data) return old;
-        return { ...old, data: old.data.map((a: CompanyApplication) => a.id === id ? { ...a, status: "rejected" } : a) };
+        const filtered = old.data.filter((a: CompanyApplication) => a.id !== id);
+        return { ...old, data: filtered, total_items: Math.max(0, (old.total_items || 1) - 1) };
       });
     },
     onSuccess: () => toast.success("Company application rejected"),
@@ -361,7 +399,7 @@ export function useUpdateCompanyProfile() {
   throw new Error(errMsg);
 }
 const json = await res.json();
-      return json.data;
+      return normalizeCompany(json.data);
     },
     onSuccess: (updated) => {
       qc.setQueryData(["company", "my"], updated);
@@ -523,6 +561,107 @@ const json = await res.json();
 }
 // ── Public queries ────────────────────────────────────────────────────
 
+export function useCompanyTenders(options: UseCompaniesOptions = {}) {
+  return useQuery({
+    queryKey: ["company", "tenders", options],
+    queryFn: async (): Promise<PaginatedResponse<import("./use-tenders").Tender>> => {
+      const params = new URLSearchParams();
+      if (options.page) params.set("page", String(options.page));
+      if (options.page_size) params.set("page_size", String(options.page_size));
+      if (options.search) params.set("search", options.search);
+      if (options.status) params.set("status", options.status);
+      const res = await fetch(`${buildApiUrl("company-owner/tenders")}?${params}`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch company tenders");
+      const json = await res.json();
+      return { data: json.data ?? [], total_items: json.total_items ?? 0, total_pages: json.total_pages ?? 1, page: json.page ?? 1, page_size: json.page_size ?? 20 };
+    },
+  });
+}
+
+export function useCompanyCreateTender() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<import("./use-tenders").Tender>): Promise<import("./use-tenders").Tender> => {
+      const res = await fetch(buildApiUrl("company-owner/tenders"), {
+        method: "POST", headers: getAuthHeaders(), body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+  const text = await res.text();
+  let errMsg = "Failed to create tender";
+  if (text.includes("{")) {
+    try { errMsg = JSON.parse(text).message || errMsg; } catch(e) {}
+  } else if (text) {
+    errMsg = text;
+  }
+  throw new Error(errMsg);
+}
+const json = await res.json();
+      return json.data;
+    },
+    onSuccess: (newTender) => {
+      qc.setQueriesData({ queryKey: ["company", "tenders"] }, (old: any) => {
+        if (!old?.data) return old;
+        return { ...old, data: [newTender, ...old.data], total_items: (old.total_items || 0) + 1 };
+      });
+      qc.invalidateQueries({ queryKey: ["company", "tenders"] });
+      toast.success("Tender created successfully");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useCompanyUpdateTender() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Partial<import("./use-tenders").Tender> }): Promise<import("./use-tenders").Tender> => {
+      const res = await fetch(buildApiUrl(`company-owner/tenders/${id}`), {
+        method: "PUT", headers: getAuthHeaders(), body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+  const text = await res.text();
+  let errMsg = "Failed to update tender";
+  if (text.includes("{")) {
+    try { errMsg = JSON.parse(text).message || errMsg; } catch(e) {}
+  } else if (text) {
+    errMsg = text;
+  }
+  throw new Error(errMsg);
+}
+const json = await res.json();
+      return json.data;
+    },
+    onSuccess: (updated) => {
+      qc.setQueriesData({ queryKey: ["company", "tenders"] }, (old: any) => {
+        if (!old?.data) return old;
+        return { ...old, data: old.data.map((t: any) => t.id === updated.id ? updated : t) };
+      });
+      qc.invalidateQueries({ queryKey: ["company", "tenders"] });
+      toast.success("Tender updated successfully");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useCompanyDeleteTender() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const res = await fetch(buildApiUrl(`company-owner/tenders/${id}`), { method: "DELETE", headers: getAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to delete tender");
+    },
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ["company", "tenders"] });
+      qc.setQueriesData({ queryKey: ["company", "tenders"] }, (old: any) => {
+        if (!old?.data) return old;
+        return { ...old, data: old.data.filter((t: any) => t.id !== id), total_items: Math.max(0, (old.total_items || 1) - 1) };
+      });
+    },
+    onSuccess: () => toast.success("Tender deleted"),
+    onError: (e: Error) => { toast.error(e.message); qc.invalidateQueries({ queryKey: ["company", "tenders"] }); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["company", "tenders"] }),
+  });
+}
+
 export function usePublicCompanies(options: UseCompaniesOptions = {}) {
   return useQuery({
     queryKey: ["public", "companies", options],
@@ -536,7 +675,7 @@ export function usePublicCompanies(options: UseCompaniesOptions = {}) {
       if (!res.ok) throw new Error("Failed to fetch companies");
       const json = await res.json();
       return { 
-        data: json.data ?? [], 
+        data: (json.data ?? []).map(normalizeCompany), 
         total_items: json.total_items ?? 0, 
         total_pages: json.total_pages ?? 1, 
         page: json.page ?? 1, 
@@ -553,7 +692,7 @@ export function usePublicCompany(slug: string) {
       const res = await fetch(buildApiUrl(`companies/${slug}`));
       if (!res.ok) throw new Error("Company not found");
       const json = await res.json();
-      return json.data;
+      return normalizeCompany(json.data);
     },
     enabled: !!slug,
   });

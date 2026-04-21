@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useSubmitOwnerApplication } from "@/hooks/use-owner-applications";
 import { MultiImageUpload } from "@/components/shared/multi-image-upload";
@@ -54,9 +55,9 @@ const inputCls =
 export default function OwnerOnboardingPage() {
   const { user, login } = useAuth();
   const submitMutation = useSubmitOwnerApplication();
+  const router = useRouter();
 
   const [step, setStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [docImages, setDocImages] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
@@ -87,6 +88,32 @@ export default function OwnerOnboardingPage() {
     : "—";
   const displayEmail = user?.email || creds.email || "—";
 
+  const [validatingEmail, setValidatingEmail] = useState(false);
+
+  async function verifyEmailDomain(email: string): Promise<string | null> {
+    const domain = email.split("@")[1]?.toLowerCase();
+    if (!domain) return "Invalid email format.";
+    const disposable = [
+      "mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","yopmail.com",
+      "sharklasers.com","guerrillamailblock.com","throwam.com","maildrop.cc","trashmail.com",
+      "fakeinbox.com","dispostable.com","spamgourmet.com","mytemp.email","temp-mail.org",
+      "example.com","test.com","sample.com","fake.com","invalid.com",
+    ];
+    if (disposable.includes(domain)) return "Disposable or example email addresses are not allowed.";
+    try {
+      const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`);
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.Answer || data.Answer.length === 0) {
+          return `The email domain "${domain}" does not appear to be a valid mail domain.`;
+        }
+      }
+    } catch {
+      // network issue — don't block, fall through
+    }
+    return null;
+  }
+
   const validateStep = (): boolean => {
     if (step === 1) {
       if (!form.business_name.trim()) { toast.error("Business name is required"); return false; }
@@ -115,8 +142,15 @@ export default function OwnerOnboardingPage() {
     return true;
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (!validateStep()) return;
+    // Async email domain check on step 1 for new users
+    if (step === 1 && !user && creds.email) {
+      setValidatingEmail(true);
+      const emailErr = await verifyEmailDomain(creds.email);
+      setValidatingEmail(false);
+      if (emailErr) { toast.error(emailErr); return; }
+    }
     setStep((s) => Math.min(5, s + 1));
   };
 
@@ -155,56 +189,15 @@ export default function OwnerOnboardingPage() {
         ...form,
         document_url: docImages[0] || "",
       });
-      setSubmitted(true);
+      localStorage.setItem("ansell_pending_owner_application", "true");
+      toast.success("Application submitted! Our team will review it within 1–3 business days.");
+      router.push("/");
     } catch {
       // mutation onError already shows toast
     } finally {
       setSubmitting(false);
     }
   };
-
-  if (submitted) {
-    return (
-      <>
-        <FrontendNavbar />
-        <div className="min-h-screen bg-[#080d08] flex items-center justify-center px-5 pt-20 [font-family:var(--font-poppins)]">
-          <div className="max-w-md w-full text-center">
-            <div className="mb-6 flex justify-center">
-              <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center animate-in zoom-in duration-500">
-                <CheckCircle2 className="h-12 w-12 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Application Submitted!</h1>
-            <p className="text-white/60 text-[13px] leading-6 mb-4">
-              Your property owner application has been received. Our team will review it
-              within 1–3 business days and notify you of the decision.
-            </p>
-            <p className="text-white/50 text-[12px] leading-relaxed mb-8">
-              {user
-                ? "Once approved, you'll have full access to your owner dashboard."
-                : `Once approved, you can log in with ${displayEmail} and access your owner dashboard.`}
-            </p>
-            <div className="space-y-3">
-              <Link
-                href="/"
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-primary px-5 py-3.5 text-[14px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 transition-all"
-              >
-                <Home className="h-4 w-4" />
-                Back to Storefront
-              </Link>
-              <Link
-                href="/login"
-                className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/20 px-5 py-3.5 text-[14px] font-medium text-white/70 hover:text-white hover:border-white/40 hover:bg-white/5 active:scale-95 transition-all"
-              >
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </div>
-        <FrontendFooter />
-      </>
-    );
-  }
 
   const isPending = submitting || submitMutation.isPending;
 
@@ -519,8 +512,8 @@ export default function OwnerOnboardingPage() {
                       <div className="mt-0.5">⚡</div>
                       <div>
                         {user
-                          ? "After submission, our admin team will review your application. Once approved, your account role will be upgraded and you'll gain access to the Owner Dashboard."
-                          : `Account will be created with ${displayEmail}. After admin approval, log in with those credentials to access the Owner Dashboard — no extra email verification needed.`}
+                          ? "After submission, our admin team will review your application. You can track the application status while you wait, and owner features unlock only after approval."
+                          : `Account will be created with ${displayEmail}. After admin approval, sign in with those credentials to view your application status and use owner features once approved.`}
                       </div>
                     </div>
                   </div>
@@ -556,10 +549,14 @@ export default function OwnerOnboardingPage() {
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary text-[13px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 shadow-sm shadow-primary/20 transition-all"
+                      disabled={validatingEmail}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-primary text-[13px] font-bold text-primary-foreground hover:brightness-110 active:scale-95 shadow-sm shadow-primary/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Continue
-                      <ArrowRight className="h-4 w-4" />
+                      {validatingEmail ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" />Verifying email…</>
+                      ) : (
+                        <>Continue <ArrowRight className="h-4 w-4" /></>
+                      )}
                     </button>
                   ) : (
                     <button
@@ -587,3 +584,5 @@ export default function OwnerOnboardingPage() {
     </>
   );
 }
+
+

@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Search, MoreHorizontal, Eye, Edit, Trash2, PlusCircle, FileText,
-  CheckCircle, XCircle, Star, StarOff, Loader2,
+  CheckCircle, XCircle, Star, StarOff, Loader2, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -60,6 +60,7 @@ interface TenderFormData {
   contact_person: string;
   contact_email: string;
   contact_phone: string;
+  weblink: string;
   status: string;
 }
 
@@ -68,6 +69,7 @@ const DEFAULT_FORM: TenderFormData = {
   tender_type: "open", description: "", eligibility_criteria: "", required_documents: "",
   value_estimate: "", value_currency: "USD", city: "", submission_deadline: "",
   tender_open_date: "", contact_person: "", contact_email: "", contact_phone: "",
+  weblink: "",
   status: "pending_review",
 };
 
@@ -92,7 +94,8 @@ function TenderFormModal({ open, onClose, tender }: { open: boolean; onClose: ()
       tender_open_date: (tender.tender_open_date || (tender as any).open_date) ? (tender.tender_open_date || (tender as any).open_date).slice(0, 10) : "",
       contact_person: tender.contact_person || "", 
       contact_email: tender.contact_email || "",
-      contact_phone: tender.contact_phone || "", 
+      contact_phone: tender.contact_phone || "",
+      weblink: tender.weblink || "",
       status: tender.status,
     } : DEFAULT_FORM
   );
@@ -117,6 +120,7 @@ function TenderFormModal({ open, onClose, tender }: { open: boolean; onClose: ()
           contact_person: tender.contact_person || "",
           contact_email: tender.contact_email || "",
           contact_phone: tender.contact_phone || "",
+          weblink: tender.weblink || "",
           status: tender.status,
         });
       } else {
@@ -214,6 +218,13 @@ function TenderFormModal({ open, onClose, tender }: { open: boolean; onClose: ()
               <div>
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Contact Email</Label>
                 <Input value={form.contact_email} onChange={e => set("contact_email", e.target.value)} placeholder="email@org.com" className="h-9 text-[13px]" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-[11px] text-gray-500 mb-1.5 block">Public Tender Web Link</Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                  <Input value={form.weblink} onChange={e => set("weblink", e.target.value)} placeholder="https://example.com/tenders/notice" className="h-9 text-[13px] pl-9" />
+                </div>
               </div>
               <div>
                 <Label className="text-[11px] text-gray-500 mb-1.5 block">Status</Label>

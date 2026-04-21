@@ -17,11 +17,13 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Search, CheckCircle, XCircle, Eye, Users, Clock, Loader2, Building2,
-  Phone, MapPin, FileText,
+  Search, CheckCircle, XCircle, Eye, Users, Loader2,
+  Phone, MapPin, FileText, Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +34,13 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 type FilterTab = "pending" | "approved" | "rejected" | "";
+
+const EMPTY_VALUE = "-";
+
+function isImageAsset(url?: string | null) {
+  if (!url) return false;
+  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
+}
 
 export default function AdminOwnerApplicationsPage() {
   const [filterStatus, setFilterStatus] = useState<FilterTab>("pending");
@@ -89,7 +98,6 @@ export default function AdminOwnerApplicationsPage() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Owner Applications</h1>
@@ -97,7 +105,6 @@ export default function AdminOwnerApplicationsPage() {
         </div>
       </div>
 
-      {/* Tab filter */}
       <div className="flex bg-gray-100 p-1 rounded-xl w-fit gap-0.5">
         {tabs.map((t) => (
           <button
@@ -113,7 +120,6 @@ export default function AdminOwnerApplicationsPage() {
         ))}
       </div>
 
-      {/* Table */}
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row justify-between gap-3">
@@ -175,7 +181,7 @@ export default function AdminOwnerApplicationsPage() {
                       </TableCell>
                       <TableCell className="text-sm font-medium text-gray-800">{app.business_name}</TableCell>
                       <TableCell className="text-sm text-gray-600 capitalize">{app.business_type}</TableCell>
-                      <TableCell className="text-sm text-gray-500">{app.city || "—"}</TableCell>
+                      <TableCell className="text-sm text-gray-500">{app.city || EMPTY_VALUE}</TableCell>
                       <TableCell className="text-xs text-gray-400">
                         {new Date(app.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                       </TableCell>
@@ -192,7 +198,8 @@ export default function AdminOwnerApplicationsPage() {
                           {app.status === "pending" && (
                             <>
                               <Button
-                                variant="ghost" size="sm"
+                                variant="ghost"
+                                size="sm"
                                 className="h-8 px-3 text-emerald-700 hover:bg-emerald-50 text-xs font-medium"
                                 onClick={() => approveMutation.mutate(app.id)}
                                 disabled={approveMutation.isPending}
@@ -204,7 +211,8 @@ export default function AdminOwnerApplicationsPage() {
                                 )}
                               </Button>
                               <Button
-                                variant="ghost" size="sm"
+                                variant="ghost"
+                                size="sm"
                                 className="h-8 px-3 text-red-700 hover:bg-red-50 text-xs font-medium"
                                 onClick={() => openReject(app.id)}
                               >
@@ -225,84 +233,165 @@ export default function AdminOwnerApplicationsPage() {
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500">Page {page} of {totalPages}</p>
               <div className="flex gap-1">
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}>Previous</Button>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}>Next</Button>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* View Application Dialog */}
       <Dialog open={!!viewApp} onOpenChange={(v) => { if (!v) setViewApp(null); }}>
         {viewApp && (
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl p-0 overflow-hidden">
+            <DialogHeader className="px-6 pt-5 pb-3 border-b border-gray-100">
               <DialogTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
                 Owner Application
               </DialogTitle>
-              <DialogDescription>Review the applicant's details below</DialogDescription>
+              <DialogDescription>Review the applicant&apos;s details below</DialogDescription>
             </DialogHeader>
-            <Separator />
-            <div className="space-y-4 py-2">
-              {/* Applicant */}
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
-                  {viewApp.user?.first_name?.[0] ?? "?"}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{viewApp.user?.first_name} {viewApp.user?.last_name}</p>
-                  <p className="text-xs text-gray-500">{viewApp.user?.email}</p>
-                  <Badge className={cn("mt-1 text-xs border", STATUS_STYLES[viewApp.status])}>{viewApp.status}</Badge>
-                </div>
+
+            <Tabs defaultValue="overview" className="w-full">
+              <div className="px-6 pt-4">
+                <TabsList className="h-9 text-[13px]">
+                  <TabsTrigger value="overview" className="text-[13px]">Overview</TabsTrigger>
+                  <TabsTrigger value="contact" className="text-[13px]">Contact</TabsTrigger>
+                  <TabsTrigger value="documents" className="text-[13px]">Documents</TabsTrigger>
+                  <TabsTrigger value="review" className="text-[13px]">Review</TabsTrigger>
+                </TabsList>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Business Name</p>
-                  <p className="text-sm font-semibold text-gray-900">{viewApp.business_name}</p>
-                </div>
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Business Type</p>
-                  <p className="text-sm text-gray-700 capitalize">{viewApp.business_type}</p>
-                </div>
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Phone</p>
-                  <p className="text-sm text-gray-700 flex items-center gap-1"><Phone className="h-3 w-3" />{viewApp.phone_number}</p>
-                </div>
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">City</p>
-                  <p className="text-sm text-gray-700 flex items-center gap-1"><MapPin className="h-3 w-3" />{viewApp.city || "—"}</p>
-                </div>
-              </div>
+              <ScrollArea className="max-h-[70vh]">
+                <div className="px-6 py-4">
+                  <TabsContent value="overview" className="mt-0 space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                        {viewApp.user?.first_name?.[0] ?? "?"}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{viewApp.user?.first_name} {viewApp.user?.last_name}</p>
+                        <p className="text-xs text-gray-500">{viewApp.user?.email || EMPTY_VALUE}</p>
+                        <Badge className={cn("mt-1 text-xs border capitalize", STATUS_STYLES[viewApp.status] ?? "")}>{viewApp.status}</Badge>
+                      </div>
+                    </div>
 
-              {viewApp.description && (
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Description</p>
-                  <p className="text-sm text-gray-700">{viewApp.description}</p>
-                </div>
-              )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { label: "Business Name", value: viewApp.business_name || EMPTY_VALUE },
+                        { label: "Business Type", value: viewApp.business_type ? viewApp.business_type.replace(/_/g, " ") : EMPTY_VALUE },
+                        { label: "Phone Number", value: viewApp.phone_number || EMPTY_VALUE },
+                        { label: "City", value: viewApp.city || EMPTY_VALUE },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                          <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">{label}</p>
+                          <p className="text-sm text-gray-800">{value}</p>
+                        </div>
+                      ))}
+                    </div>
 
-              {viewApp.document_url && (
-                <div className="p-3 rounded-xl border border-primary/20 bg-primary/5">
-                  <p className="text-[10px] font-bold uppercase text-primary/70 tracking-wide mb-2">Supporting Document</p>
-                  <img src={viewApp.document_url} alt="Document" className="rounded-lg max-h-48 w-auto object-contain" />
-                </div>
-              )}
+                    <div className="p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                      <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Description</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{viewApp.description || EMPTY_VALUE}</p>
+                    </div>
+                  </TabsContent>
 
-              {viewApp.review_note && (
-                <div className="p-3 rounded-xl border border-red-100 bg-red-50">
-                  <p className="text-[10px] font-bold uppercase text-red-400 tracking-wide mb-1">Review Note</p>
-                  <p className="text-sm text-red-700">{viewApp.review_note}</p>
+                  <TabsContent value="contact" className="mt-0 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { label: "Applicant Name", value: `${viewApp.user?.first_name ?? ""} ${viewApp.user?.last_name ?? ""}`.trim() || EMPTY_VALUE, icon: Users },
+                        { label: "Applicant Email", value: viewApp.user?.email || EMPTY_VALUE, icon: Mail },
+                        { label: "Phone Number", value: viewApp.phone_number || EMPTY_VALUE, icon: Phone },
+                        { label: "City", value: viewApp.city || EMPTY_VALUE, icon: MapPin },
+                      ].map(({ label, value, icon: Icon }) => (
+                        <div key={label} className="p-3 rounded-xl border border-gray-100 bg-white">
+                          <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">{label}</p>
+                          <p className="text-sm text-gray-700 flex items-center gap-1.5">
+                            <Icon className="h-3.5 w-3.5 text-gray-400" />
+                            <span>{value}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="p-3 rounded-xl border border-gray-100 bg-white">
+                      <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">Address</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{viewApp.address || EMPTY_VALUE}</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="documents" className="mt-0 space-y-4">
+                    {viewApp.document_url ? (
+                      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-primary/70 tracking-wide mb-1">Supporting Document</p>
+                            <p className="text-sm text-gray-700">Uploaded verification document for this application.</p>
+                          </div>
+                          <a
+                            href={viewApp.document_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-white px-3 py-2 text-[13px] font-medium text-primary hover:bg-primary/5"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            Open file
+                          </a>
+                        </div>
+
+                        {isImageAsset(viewApp.document_url) ? (
+                          <img src={viewApp.document_url} alt="Supporting document" className="rounded-lg max-h-80 w-full object-contain bg-white border border-primary/10" />
+                        ) : (
+                          <div className="rounded-lg border border-dashed border-primary/20 bg-white/80 p-6 text-center text-sm text-gray-600">
+                            Preview is not available for this file type here. Use &quot;Open file&quot; to view the document.
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-sm text-gray-500">
+                        No supporting document was uploaded with this application.
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="review" className="mt-0 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { label: "Status", value: viewApp.status ? viewApp.status.replace(/_/g, " ") : EMPTY_VALUE },
+                        { label: "Submitted", value: new Date(viewApp.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
+                        { label: "Last Updated", value: new Date(viewApp.updated_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
+                        { label: "Reviewed At", value: viewApp.reviewed_at ? new Date(viewApp.reviewed_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : EMPTY_VALUE },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="p-3 rounded-xl border border-gray-100 bg-white">
+                          <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wide mb-1">{label}</p>
+                          <p className="text-sm text-gray-800">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className={cn(
+                      "p-3 rounded-xl border",
+                      viewApp.review_note ? "border-red-100 bg-red-50" : "border-gray-100 bg-gray-50/50"
+                    )}>
+                      <p className={cn(
+                        "text-[10px] font-bold uppercase tracking-wide mb-1",
+                        viewApp.review_note ? "text-red-400" : "text-gray-400"
+                      )}>
+                        Review Note
+                      </p>
+                      <p className={cn("text-sm whitespace-pre-wrap", viewApp.review_note ? "text-red-700" : "text-gray-600")}>
+                        {viewApp.review_note || "No review note has been added yet."}
+                      </p>
+                    </div>
+                  </TabsContent>
                 </div>
-              )}
-            </div>
+              </ScrollArea>
+            </Tabs>
 
             {viewApp.status === "pending" && (
               <>
                 <Separator />
-                <div className="flex gap-2">
+                <div className="flex gap-2 px-6 py-4">
                   <Button
                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                     onClick={() => approveMutation.mutate(viewApp.id, { onSuccess: () => setViewApp(null) })}
@@ -326,7 +415,6 @@ export default function AdminOwnerApplicationsPage() {
         )}
       </Dialog>
 
-      {/* Reject dialog */}
       <Dialog open={rejectOpen} onOpenChange={(v) => { setRejectOpen(v); if (!v) setRejectingId(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>

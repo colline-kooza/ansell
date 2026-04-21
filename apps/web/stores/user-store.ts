@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 export interface UserStore {
   // Favourites
   favoritePropertyIds: string[];
@@ -62,11 +60,15 @@ export const useUserStore = create<UserStore>()(
       isNewsPreferred: (category) => get().newsPreferences.includes(category),
 
       clearAll: () =>
-        set({ favoritePropertyIds: [], favoriteJobIds: [], newsPreferences: [] }),
+        set({
+          favoritePropertyIds: [],
+          favoriteJobIds: [],
+          newsPreferences: [],
+        }),
     }),
     {
       name: "ansell-user-store",
       version: 1,
-    }
-  )
+    },
+  ),
 );

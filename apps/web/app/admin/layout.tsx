@@ -8,9 +8,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Building2, Briefcase, FileText, Users, Video,
-  Newspaper, BookOpen, IdCard, ChevronDown, Home, LogOut, Settings,
-  ClipboardList, CheckSquare, Building, Truck, Trophy, UserCheck,
-  ShieldCheck, BarChart3, FilePlus, PanelLeft, Menu, Search, Bell,
+  BookOpen, ChevronDown, Home, LogOut, Settings,
+  ClipboardList, CheckSquare, Building, Truck, Trophy,
+  ShieldCheck, BarChart3, PanelLeft, Menu, Search, Bell,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -46,13 +46,7 @@ const SECTIONS: SectionDef[] = [
   {
     title: "Jobs & Companies",
     items: [
-      {
-        label: "Jobs", icon: Briefcase,
-        children: [
-          { label: "All Jobs", href: "/admin/dashboard/jobs" },
-          { label: "Applications", href: "/admin/dashboard/jobs/applications" },
-        ],
-      },
+      { label: "All Jobs", href: "/admin/dashboard/jobs", icon: Briefcase },
       {
         label: "Companies", icon: Building,
         children: [
@@ -66,7 +60,6 @@ const SECTIONS: SectionDef[] = [
     title: "Tenders",
     items: [
       { label: "All Tenders", href: "/admin/dashboard/tenders", icon: Trophy },
-      { label: "Bids", href: "/admin/dashboard/tenders/bids", icon: FilePlus },
     ],
   },
   {
@@ -78,9 +71,7 @@ const SECTIONS: SectionDef[] = [
   {
     title: "Content",
     items: [
-      // Articles/News hidden from sidebar — page maintained at /admin/dashboard/articles
       { label: "Courses", href: "/admin/dashboard/courses", icon: BookOpen },
-      { label: "Enrollments", href: "/admin/dashboard/enrollments", icon: UserCheck },
       { label: "Video Adverts", href: "/admin/dashboard/video-adverts", icon: Video },
     ],
   },
@@ -88,7 +79,6 @@ const SECTIONS: SectionDef[] = [
     title: "Users & Identity",
     items: [
       { label: "All Users", href: "/admin/dashboard/users", icon: Users },
-      { label: "National ID Apps", href: "/admin/dashboard/national-id", icon: IdCard },
       { label: "Roles & Access", href: "/admin/dashboard/roles", icon: ShieldCheck },
     ],
   },
@@ -413,6 +403,20 @@ function AdminNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
             className="h-9 w-[200px] lg:w-[260px] rounded-xl bg-gray-50 pl-9 pr-4 text-[13px] text-gray-700 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
+
+        {/* Role badge */}
+        <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary uppercase tracking-wider shrink-0">
+          {user?.role?.replace(/_/g, " ") || "Admin"}
+        </span>
+
+        {/* Home button */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors shrink-0"
+        >
+          <Home className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
 
         {/* Notifications */}
         <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">

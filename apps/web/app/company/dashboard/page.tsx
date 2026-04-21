@@ -2,13 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
-import { useMyCompany, useCompanyJobs } from "@/hooks/use-companies";
+import { useMyCompany, useCompanyJobs, useCompanyTenders } from "@/hooks/use-companies";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Briefcase, Building, PlusCircle,
+  Briefcase, Building, PlusCircle, FileText,
   Eye, TrendingUp, Globe, Phone, Mail, ShieldCheck, MapPin,
   AlertCircle, ChevronRight, Clock,
 } from "lucide-react";
@@ -17,17 +17,23 @@ import { useAuth } from "@/context/auth-context";
 
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  open: "bg-emerald-50 text-emerald-700 border-emerald-200",
   pending: "bg-amber-50 text-amber-700 border-amber-200",
+  pending_review: "bg-amber-50 text-amber-700 border-amber-200",
   rejected: "bg-red-50 text-red-700 border-red-200",
   closed: "bg-gray-50 text-gray-600 border-gray-200",
+  draft: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
 export default function CompanyDashboardPage() {
   const { user } = useAuth();
   const { data: company, isLoading: companyLoading } = useMyCompany();
   const { data: jobsData, isLoading: jobsLoading } = useCompanyJobs({ page: 1, page_size: 5 });
+  const { data: tendersData, isLoading: tendersLoading } = useCompanyTenders({ page: 1, page_size: 5 });
 
   const jobs = jobsData?.data ?? [];
+  const tenders = tendersData?.data ?? [];
+  const totalTenderViews = tenders.reduce((sum, tender) => sum + (tender.views ?? 0), 0);
 
   if (companyLoading) {
     return (
@@ -48,6 +54,8 @@ export default function CompanyDashboardPage() {
   const stats = [
     { label: "Active Jobs", value: jobsData?.total_items ?? 0, icon: Briefcase, color: "blue", gradient: "from-blue-50", border: "border-blue-100", textColor: "text-blue-600" },
     { label: "Profile Views", value: company.views ?? 0, icon: Eye, color: "purple", gradient: "from-purple-50", border: "border-purple-100", textColor: "text-purple-600" },
+    { label: "Company Tenders", value: tendersData?.total_items ?? 0, icon: FileText, color: "amber", gradient: "from-amber-50", border: "border-amber-100", textColor: "text-amber-600" },
+    { label: "Tender Views", value: totalTenderViews, icon: TrendingUp, color: "emerald", gradient: "from-emerald-50", border: "border-emerald-100", textColor: "text-emerald-600" },
   ];
 
   return (
@@ -56,7 +64,7 @@ export default function CompanyDashboardPage() {
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900">
-            Welcome back, <span className="text-primary">{user?.first_name || "Owner"}</span>! 🏢
+            Welcome back, <span className="text-primary">{user?.first_name || "Owner"}</span>
           </h1>
           <p className="text-[13px] text-gray-500 mt-1 max-w-xl">
             Manage your company profile, post job vacancies, and track applicant progress across ANASELL.
@@ -64,10 +72,13 @@ export default function CompanyDashboardPage() {
         </div>
         <div className="flex items-center gap-2">
            <Button asChild variant="outline" size="sm" className="bg-white border-gray-200 text-[13px] shadow-sm">
-             <Link href="/companies"><Globe className="h-3.5 w-3.5 mr-2 text-gray-400" />Public Profile</Link>
+             <Link href={company.slug ? `/companies/${company.slug}` : "/companies"}><Globe className="h-3.5 w-3.5 mr-2 text-gray-400" />Public Profile</Link>
            </Button>
            <Button asChild size="sm" className="text-[13px] shadow-sm gap-1.5">
              <Link href="/company/dashboard/jobs?new=1"><PlusCircle className="h-3.5 w-3.5" />Post Job</Link>
+           </Button>
+           <Button asChild variant="outline" size="sm" className="bg-white border-gray-200 text-[13px] shadow-sm">
+             <Link href="/company/dashboard/tenders?new=1"><FileText className="h-3.5 w-3.5 mr-2 text-gray-400" />Create Tender</Link>
            </Button>
         </div>
       </section>
@@ -175,6 +186,67 @@ export default function CompanyDashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          <Card className="bg-white border-gray-100 shadow-sm overflow-hidden">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between bg-gray-50/50 border-b border-gray-100">
+              <div>
+                <CardTitle className="text-[14px] font-bold">Recent Tenders</CardTitle>
+                <CardDescription className="text-[11px]">Your latest 5 company tenders</CardDescription>
+              </div>
+              <Link href="/company/dashboard/tenders" className="text-[12px] text-primary font-semibold hover:underline flex items-center gap-1.5">
+                View all <ChevronRight className="h-3 w-3" />
+              </Link>
+            </CardHeader>
+            <CardContent className="p-0">
+              {tendersLoading ? (
+                <div className="p-4 space-y-3">
+                  {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+                </div>
+              ) : tenders.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <FileText className="h-6 w-6 text-gray-300" />
+                  </div>
+                  <p className="text-[13px] font-semibold text-gray-900">No tenders created yet</p>
+                  <p className="text-[12px] text-gray-500 mt-1 max-w-[260px] mx-auto">Publish procurement opportunities and keep them tied to your company profile.</p>
+                  <Button asChild size="sm" variant="link" className="mt-2 text-primary font-bold">
+                    <Link href="/company/dashboard/tenders?new=1">Create a tender now</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {tenders.map((tender) => (
+                    <div key={tender.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 bg-amber-50 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-white transition-colors border border-transparent group-hover:border-amber-100">
+                          <FileText className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-bold text-gray-900 truncate group-hover:text-primary transition-colors">{tender.title}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="flex items-center gap-1 text-[11px] text-gray-400"><MapPin className="h-3 w-3" />{tender.city || "Juba"}</span>
+                            <span className="flex items-center gap-1 text-[11px] text-gray-400 font-medium capitalize"><Eye className="h-3 w-3 text-gray-300" />{(tender.views ?? 0).toLocaleString()} views</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right hidden sm:block">
+                          <p className="text-[12px] font-bold text-gray-900">{tender.bid_count || 0}</p>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-tighter">Bids</p>
+                        </div>
+                        <Badge className={cn("text-[10px] border capitalize px-2 h-5", STATUS_STYLES[tender.status] ?? "")}>
+                          {tender.status?.replace(/_/g, " ")}
+                        </Badge>
+                        <Link href="/company/dashboard/tenders" className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-primary hover:border hover:border-gray-100">
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar Info */}
@@ -206,8 +278,8 @@ export default function CompanyDashboardPage() {
                 <div className="space-y-3 pt-2">
                   {[
                     { icon: MapPin, label: company.city || "South Sudan", sub: "Location" },
-                    { icon: Phone, label: company.phone_number || "—", sub: "Phone" },
-                    { icon: Mail, label: company.email || "—", sub: "Contact Email" },
+                    { icon: Phone, label: company.phone_number || "Not set", sub: "Phone" },
+                    { icon: Mail, label: company.email || "Not set", sub: "Contact Email" },
                     { icon: Globe, label: company.website ? company.website.replace(/^https?:\/\//, "") : "Set website", link: company.website, sub: "Website" },
                   ].map(({ icon: Icon, label, link, sub }) => (
                     <div key={sub} className="group flex items-start gap-3">

@@ -44,6 +44,7 @@
 
 :root {
   --radius: 0.625rem;
+  --font-poppins: "Poppins", "Segoe UI", system-ui, sans-serif;
 
   /* Ansell brand — primary green */
   --background: oklch(1 0 0);

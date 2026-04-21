@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { buildApiUrl } from "@/lib/api";
+import { useUserStore } from "@/stores/user-store";
 
 export interface AuthUser {
   id: string;
@@ -67,6 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback((newToken: string, newUser: AuthUser) => {
+    // Clear favourites and preferences from any previously logged-in user
+    useUserStore.getState().clearAll();
     localStorage.setItem("ansell_auth_token", newToken);
     localStorage.setItem("ansell_auth_user", JSON.stringify(newUser));
     setCookie("ansell_auth_token", newToken);
@@ -75,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    useUserStore.getState().clearAll();
     localStorage.removeItem("ansell_auth_token");
     localStorage.removeItem("ansell_auth_user");
     deleteCookie("ansell_auth_token");

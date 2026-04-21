@@ -43,11 +43,11 @@ export default function CompanyProfilePage() {
         company_name: company.company_name || "",
         description: company.description || "",
         industry: company.industry || "",
-        size: company.size || "",
+        size: company.size || company.employee_count || "",
         founded_year: company.founded_year ? String(company.founded_year) : "",
         website: company.website || "",
         email: company.email || "",
-        phone: company.phone_number || "",
+        phone: company.phone || company.phone_number || "",
         city: company.city || "",
         address: company.address || "",
       });
@@ -61,11 +61,19 @@ export default function CompanyProfilePage() {
   const handleSave = async () => {
     if (!form.company_name.trim()) { toast.error("Company name is required"); return; }
     await updateMutation.mutateAsync({
-      ...form,
+      company_name: form.company_name,
+      description: form.description,
+      industry: form.industry,
+      employee_count: form.size || undefined,
       founded_year: form.founded_year ? Number(form.founded_year) : undefined,
+      website: form.website || undefined,
+      email: form.email || undefined,
+      phone_number: form.phone || undefined,
+      city: form.city || undefined,
+      address: form.address || undefined,
       logo_url: logoImages[0] || company?.logo_url || undefined,
       cover_image_url: coverImages[0] || company?.cover_image_url || undefined,
-    } as any);
+    });
   };
 
   if (isLoading) {

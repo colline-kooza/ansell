@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUserStore } from "@/stores/user-store";
+import { getPendingApplicationHref, isAdminRole, isCompanyRole, isOwnerRole } from "@/lib/pending-applications";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 interface NavItemDef {
@@ -240,6 +241,7 @@ function SidebarBody({ collapsed = false }: { collapsed?: boolean }) {
 /* ── Navbar ──────────────────────────────────────────────────────────────── */
 function UserNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const { favoritePropertyIds, favoriteJobIds } = useUserStore();
   const totalFavorites = favoritePropertyIds.length + favoriteJobIds.length;
@@ -322,6 +324,20 @@ function UserNavbar({ onToggleCollapse }: { onToggleCollapse: () => void }) {
           />
         </div>
 
+        {/* Role badge */}
+        <span className="hidden sm:inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-bold text-gray-600 uppercase tracking-wider shrink-0">
+          {user?.role?.replace(/_/g, " ") || "Member"}
+        </span>
+
+        {/* Home button */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors shrink-0"
+        >
+          <Home className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
         {/* Favourites quick-indicator */}
         {totalFavorites > 0 && (
           <Link
@@ -355,14 +371,17 @@ export default function UserDashboardLayout({ children }: { children: React.Reac
       return;
     }
 
-    const r = user?.role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
-    const isSuper = r === "superadmin" || r === "admin" || r.includes("admin");
-    const isOwner = r === "owner" || r === "propertyowner" || r.includes("owner");
-    const isCompany = r === "company" || r === "companyowner" || r.includes("company");
+    const isSuper = isAdminRole(user?.role);
+    const isCompany = isCompanyRole(user?.role);
+    const isOwner = isOwnerRole(user?.role);
 
     if (isSuper) router.replace("/admin/dashboard");
-    else if (isOwner) router.replace("/owner/dashboard");
     else if (isCompany) router.replace("/company/dashboard");
+    else if (isOwner) router.replace("/owner/dashboard");
+    else {
+      const pendingHref = getPendingApplicationHref();
+      if (pendingHref) router.replace(pendingHref);
+    }
   }, [user, router]);
 
   return (

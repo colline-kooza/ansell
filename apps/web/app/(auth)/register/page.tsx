@@ -11,6 +11,7 @@ import { buildApiUrl } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import type { AuthUser } from "@/context/auth-context";
 import { CategoryCarousel } from "@/components/auth/category-carousel";
+import { getAuthenticatedHomeHref, isAdminRole, isCompanyRole, isOwnerRole } from "@/lib/pending-applications";
 
 type RegisterResponse = {
   success: boolean;
@@ -20,10 +21,9 @@ type RegisterResponse = {
 };
 
 function getRoleRedirect(role: string, fallback: string): string {
-  const r = role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
-  const isSuper = r === "superadmin" || r === "admin" || r.includes("admin");
-  const isOwner = r === "owner" || r === "propertyowner";
-  const isCompany = r === "company" || r === "companyowner";
+  const isSuper = isAdminRole(role);
+  const isOwner = isOwnerRole(role);
+  const isCompany = isCompanyRole(role);
 
   if (fallback && fallback !== "/" && fallback !== "/dashboard" && fallback !== "/login") {
     const isOwnerRoute = fallback.startsWith("/owner");
@@ -40,10 +40,7 @@ function getRoleRedirect(role: string, fallback: string): string {
     if (validFallback) return fallback;
   }
 
-  if (isSuper) return "/admin/dashboard";
-  if (isOwner) return "/owner/dashboard";
-  if (isCompany) return "/company/dashboard";
-  return "/user/dashboard";
+  return getAuthenticatedHomeHref(role);
 }
 
 // ── Step 1: Registration form ─────────────────────────────────────────────────
@@ -405,7 +402,7 @@ function RegisterContent() {
 
       {/* Right panel */}
       <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-[#080d08] px-5 py-8 sm:px-6 lg:min-h-0 lg:w-[42%] lg:px-8">
-        <div className="relative w-full max-w-md overflow-hidden bg-[#0b120b] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.85)]">
+        <div className="relative w-full max-w-md overflow-hidden bg-[#080d08] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.85)]">
           {step === "register" && (
             <div className="relative w-full pt-6">
               <div className="grid w-full grid-cols-4 gap-2 px-4 opacity-55 sm:grid-cols-5 lg:grid-cols-4 lg:px-6">
@@ -422,7 +419,7 @@ function RegisterContent() {
                   );
                 })}
               </div>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#0b120b]/80 to-[#0b120b]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#080d08]/80 to-[#080d08]" />
             </div>
           )}
 

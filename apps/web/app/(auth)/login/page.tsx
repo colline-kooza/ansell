@@ -11,6 +11,7 @@ import { buildApiUrl } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import type { AuthUser } from "@/context/auth-context";
 import { CategoryCarousel } from "@/components/auth/category-carousel";
+import { getAuthenticatedHomeHref, isAdminRole, isCompanyRole, isOwnerRole } from "@/lib/pending-applications";
 
 type LoginResponse = {
   success: boolean;
@@ -34,10 +35,9 @@ const backgroundImages = [
 ];
 
 function getRoleRedirect(role: string, fallback: string): string {
-  const r = role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
-  const isSuper = r === "superadmin" || r === "admin" || r.includes("admin");
-  const isOwner = r === "owner" || r === "propertyowner" || r.includes("owner");
-  const isCompany = r === "company" || r === "companyowner" || r.includes("company");
+  const isSuper = isAdminRole(role);
+  const isOwner = isOwnerRole(role);
+  const isCompany = isCompanyRole(role);
 
   // If there's a fallback, let's heavily sanitize it to avoid cross-role traps.
   if (fallback && fallback !== "/" && fallback !== "/dashboard" && fallback !== "/login") {
@@ -59,10 +59,7 @@ function getRoleRedirect(role: string, fallback: string): string {
     }
   }
 
-  if (isSuper) return "/admin/dashboard";
-  if (isOwner) return "/owner/dashboard";
-  if (isCompany) return "/company/dashboard";
-  return "/user/dashboard";
+  return getAuthenticatedHomeHref(role);
 }
 
 function LoginContent() {
@@ -154,7 +151,7 @@ function LoginContent() {
 
       {/* Right panel */}
       <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto bg-[#080d08] px-5 py-8 sm:px-6 lg:min-h-0 lg:w-[42%] lg:px-8">
-        <div className="relative w-full max-w-md overflow-hidden bg-[#0b120b] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.85)]">
+        <div className="relative w-full max-w-md overflow-hidden bg-[#080d08] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.85)]">
           <div className="relative w-full pt-6">
             <div className="grid w-full grid-cols-4 gap-2 px-4 opacity-55 sm:grid-cols-5 lg:grid-cols-4 lg:px-6">
               {backgroundImages.map((src, index) => {
@@ -177,7 +174,7 @@ function LoginContent() {
                 );
               })}
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#0b120b]/80 to-[#0b120b]" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#080d08]/80 to-[#080d08]" />
           </div>
 
           <div className="relative z-10 mx-auto -mt-16 flex w-full max-w-sm flex-col px-5 pb-8 pt-2 sm:px-7">
@@ -265,28 +262,30 @@ function LoginContent() {
               </Link>
             </div>
 
-            <p className="mt-6 text-center text-xs text-white/45">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                Create one
-              </Link>
-            </p>
-
             <div className="mt-5 border-t border-white/10 pt-5 flex flex-col gap-2">
               <p className="text-center text-[10px] font-semibold uppercase tracking-widest text-white/30 mb-1">
-                Register your business
+                New here? Choose how to get started
               </p>
               <Link
-                href="/become-owner"
-                className="flex items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 py-2.5 text-xs font-medium text-white/60 transition hover:bg-white/10 hover:text-white"
+                href="/register"
+                className="flex flex-col items-center gap-0.5 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-center transition hover:bg-primary/20 group"
               >
-                List a Property — Become an Owner
+                <span className="text-xs font-semibold text-primary group-hover:text-primary">Create a Personal Account</span>
+                <span className="text-[10px] text-primary/60">Browse jobs, properties, tenders &amp; more</span>
+              </Link>
+              <Link
+                href="/become-owner"
+                className="flex flex-col items-center gap-0.5 rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-center transition hover:bg-white/10 group"
+              >
+                <span className="text-xs font-semibold text-white/70 group-hover:text-white">Become a Property Owner</span>
+                <span className="text-[10px] text-white/35">List &amp; manage properties on the platform</span>
               </Link>
               <Link
                 href="/become-company"
-                className="flex items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 py-2.5 text-xs font-medium text-white/60 transition hover:bg-white/10 hover:text-white"
+                className="flex flex-col items-center gap-0.5 rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-center transition hover:bg-white/10 group"
               >
-                Register Your Company
+                <span className="text-xs font-semibold text-white/70 group-hover:text-white">Register Your Company</span>
+                <span className="text-[10px] text-white/35">Post jobs, tenders &amp; grow your business</span>
               </Link>
             </div>
           </div>

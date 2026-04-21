@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
+import { getAuthenticatedHomeHref, isAdminRole, isCompanyRole, isOwnerRole } from "@/lib/pending-applications";
 
 const NAV_LINKS = [
   { label: "Real Estate", href: "/real-estate" },
@@ -24,15 +25,9 @@ export function FrontendNavbar() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const r = user?.role?.toLowerCase()?.replace(/[_-\s]/g, "") ?? "";
-  const dashboardHref =
-    r === "superadmin" || r === "admin" || r.includes("admin")
-      ? "/admin/dashboard"
-      : r === "owner" || r === "propertyowner"
-      ? "/owner/dashboard"
-      : r === "company" || r === "companyowner"
-      ? "/company/dashboard"
-      : "/user/dashboard";
+  const dashboardHref = getAuthenticatedHomeHref(user?.role);
+  const hasRoleDashboard = isAdminRole(user?.role) || isCompanyRole(user?.role) || isOwnerRole(user?.role);
+  const dashboardLabel = hasRoleDashboard ? "View Dashboard" : dashboardHref === "/user/dashboard" ? "View Dashboard" : "Application Status";
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 w-full border-b border-border/70 bg-white/98 backdrop-blur-sm">
@@ -74,7 +69,7 @@ export function FrontendNavbar() {
                 className="inline-flex items-center gap-2 rounded-sm bg-primary px-4 py-2 text-[0.84rem] font-semibold text-primary-foreground transition hover:brightness-95"
               >
                 <LayoutDashboard className="size-4" />
-                View Dashboard
+                {dashboardLabel}
               </Link>
             ) : (
               <Link
@@ -130,7 +125,7 @@ export function FrontendNavbar() {
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center justify-center gap-2 rounded-lg bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20"
                     >
-                      <LayoutDashboard className="size-4" />View Dashboard
+                      <LayoutDashboard className="size-4" />{dashboardLabel}
                     </Link>
                   ) : (
                     <Link

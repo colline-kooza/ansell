@@ -26,6 +26,7 @@ export interface Tender {
   contact_person?: string;
   contact_email?: string;
   contact_phone?: string;
+  weblink?: string;
   attachment_url?: string;
   is_featured: boolean;
   status: string;
@@ -62,6 +63,7 @@ interface UseTendersOptions {
   city?: string;
   status?: string;
   issuing_organisation?: string;
+  company_id?: string;
   is_featured?: boolean;
   closing_soon?: boolean;
   page?: number;
@@ -75,6 +77,7 @@ async function fetchTenders(options: UseTendersOptions): Promise<TendersResponse
   if (options.category) params.set("category", options.category);
   if (options.tender_type) params.set("tender_type", options.tender_type);
   if (options.city) params.set("city", options.city);
+  if (options.company_id) params.set("company_id", options.company_id);
   if (options.status) params.set("status", options.status);
   if (options.is_featured) params.set("is_featured", "true");
   if (options.closing_soon) params.set("closing_soon", "true");
